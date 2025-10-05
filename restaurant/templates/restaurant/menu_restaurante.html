@@ -1,0 +1,273 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section Menú -->
+<section class="menu-simple-hero py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'index' %}" class="text-warning">Inicio</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'restaurantes' %}" class="text-warning">Restaurantes</a></li>
+                        <li class="breadcrumb-item active text-white">Menú</li>
+                    </ol>
+                </nav>
+                <h1 class="display-4 fw-bold text-white mb-3">{{ restaurante.nombre }}</h1>
+                <p class="lead text-white mb-4">Explora nuestro menú y realiza tu pedido</p>
+                
+                <div class="restaurant-info-simple">
+                    {% if restaurante.direccion %}
+                    <span class="badge bg-light text-dark me-2 mb-2">
+                        <i class="fas fa-map-marker-alt me-1"></i>
+                        {{ restaurante.direccion }}
+                    </span>
+                    {% endif %}
+                    
+                    {% if restaurante.telefono %}
+                    <span class="badge bg-light text-dark me-2 mb-2">
+                        <i class="fas fa-phone me-1"></i>
+                        {{ restaurante.telefono }}
+                    </span>
+                    {% endif %}
+                    
+                    <span class="badge bg-warning text-dark mb-2">
+                        <i class="fas fa-utensils me-1"></i>
+                        {{ platos.count }} platos
+                    </span>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center">
+                {% if restaurante.imagen %}
+                <img src="{{ restaurante.imagen.url }}" alt="{{ restaurante.nombre }}" class="restaurant-simple-img img-fluid rounded-circle">
+                {% else %}
+                <div class="restaurant-simple-placeholder rounded-circle">
+                    <i class="fas fa-store"></i>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Menú Section Simple -->
+<section class="menu-simple-section py-5">
+    <div class="container">
+        {% if platos %}
+        <form method="POST" id="menuSimpleForm">
+            {% csrf_token %}
+            
+            <div class="row mb-5">
+                <div class="col-12 text-center">
+                    <h2 class="section-title-simple mb-3">Nuestro Menú</h2>
+                    <p class="section-subtitle-simple text-muted">
+                        Selecciona los platos que deseas ordenar
+                    </p>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                {% for plato in platos %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="menu-simple-card">
+                        <div class="menu-simple-card-header">
+                            {% if plato.imagen %}
+                            <img src="{{ plato.imagen.url }}" alt="{{ plato.nombre }}" class="menu-simple-item-img">
+                            {% else %}
+                            <div class="menu-simple-item-placeholder">
+                                <i class="fas fa-utensils"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="menu-simple-card-body">
+                            <h4 class="menu-simple-item-title">{{ plato.nombre }}</h4>
+                            <p class="menu-simple-item-description">{{ plato.descripcion }}</p>
+                            
+                            <div class="menu-simple-item-meta">
+                                <span class="menu-simple-item-price">${{ plato.precio }}</span>
+                                
+                                {% if plato.categoria %}
+                                <span class="menu-simple-item-category badge bg-secondary">
+                                    {{ plato.categoria.nombre }}
+                                </span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="quantity-simple-selector mt-3">
+                                <label for="plato_{{ plato.id }}" class="form-label">Cantidad:</label>
+                                <input type="number" name="plato_{{ plato.id }}" id="plato_{{ plato.id }}" 
+                                       value="0" min="0" max="10" class="form-control text-center quantity-simple-input">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Order Summary Simple -->
+            <div class="row mt-5">
+                <div class="col-lg-8 mx-auto">
+                    <div class="order-simple-summary">
+                        <h3 class="text-center mb-4">Resumen del Pedido</h3>
+                        
+                        <div class="order-simple-items" id="orderSimpleItems">
+                            <p class="text-muted text-center">Los platos seleccionados aparecerán aquí</p>
+                        </div>
+                        
+                        <div class="order-simple-total text-center mt-4">
+                            <h4>Total: <span id="orderSimpleTotal">$0.00</span></h4>
+                        </div>
+                        
+                        <div class="order-simple-actions text-center mt-4">
+                            <button type="submit" class="btn btn-success btn-lg me-3" id="submitSimpleOrder">
+                                <i class="fas fa-shopping-cart me-2"></i>Realizar Pedido
+                            </button>
+                            <a href="{% url 'restaurantes' %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>Volver a Restaurantes
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+        {% else %}
+        <!-- No Dishes Available -->
+        <div class="row">
+            <div class="col-12">
+                <div class="no-dishes-simple text-center py-5">
+                    <i class="fas fa-utensils fa-3x text-muted mb-3"></i>
+                    <h3>Menú no disponible</h3>
+                    <p class="text-muted mb-4">
+                        Este restaurante no tiene platos disponibles en este momento.
+                    </p>
+                    <a href="{% url 'restaurantes' %}" class="btn btn-warning">
+                        <i class="fas fa-arrow-left me-2"></i>Volver a Restaurantes
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Additional Info Simple -->
+<section class="menu-simple-info bg-light py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4 text-center">
+                <div class="info-simple-item">
+                    <i class="fas fa-clock fa-2x text-warning mb-3"></i>
+                    <h5>Tiempo de Entrega</h5>
+                    <p class="text-muted">30-45 minutos aproximadamente</p>
+                </div>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="info-simple-item">
+                    <i class="fas fa-shipping-fast fa-2x text-warning mb-3"></i>
+                    <h5>Envío Gratis</h5>
+                    <p class="text-muted">En pedidos mayores a $20</p>
+                </div>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="info-simple-item">
+                    <i class="fas fa-credit-card fa-2x text-warning mb-3"></i>
+                    <h5>Múltiples Pagos</h5>
+                    <p class="text-muted">Aceptamos todas las tarjetas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const quantityInputs = document.querySelectorAll('.quantity-simple-input');
+    const orderItems = document.getElementById('orderSimpleItems');
+    const orderTotal = document.getElementById('orderSimpleTotal');
+    const submitOrder = document.getElementById('submitSimpleOrder');
+    
+    // Función para actualizar el resumen
+    function updateOrderSummary() {
+        let total = 0;
+        let hasItems = false;
+        let itemsHTML = '';
+        
+        // Recorrer todos los inputs de cantidad
+        quantityInputs.forEach(function(input) {
+            const quantity = parseInt(input.value) || 0;
+            if (quantity > 0) {
+                hasItems = true;
+                
+                // Encontrar el precio del plato desde el HTML
+                const priceElement = input.closest('.menu-simple-card').querySelector('.menu-simple-item-price');
+                let priceText = priceElement.textContent;
+                let price = parseFloat(priceText.replace('$', '').trim());
+                
+                // Encontrar el nombre del plato
+                const nameElement = input.closest('.menu-simple-card').querySelector('.menu-simple-item-title');
+                const name = nameElement.textContent;
+                
+                const itemTotal = price * quantity;
+                total += itemTotal;
+                
+                itemsHTML += '<div class="order-simple-item d-flex justify-content-between align-items-center mb-2 p-2 bg-white rounded">' +
+                           '<div><strong>' + name + '</strong><br><small class="text-muted">' + 
+                           quantity + ' x $' + price.toFixed(2) + '</small></div>' +
+                           '<span class="fw-bold text-success">$' + itemTotal.toFixed(2) + '</span></div>';
+            }
+        });
+        
+        // Actualizar la interfaz
+        if (hasItems) {
+            orderItems.innerHTML = itemsHTML;
+            orderTotal.textContent = '$' + total.toFixed(2);
+            submitOrder.disabled = false;
+        } else {
+            orderItems.innerHTML = '<p class="text-muted text-center">Los platos seleccionados aparecerán aquí</p>';
+            orderTotal.textContent = '$0.00';
+            submitOrder.disabled = true;
+        }
+    }
+    
+    // Manejar cambios en los inputs
+    quantityInputs.forEach(function(input) {
+        input.addEventListener('change', function() {
+            let value = parseInt(this.value) || 0;
+            if (value > 10) this.value = 10;
+            if (value < 0) this.value = 0;
+            updateOrderSummary();
+        });
+        
+        input.addEventListener('input', updateOrderSummary);
+    });
+    
+    // Validar formulario
+    const menuForm = document.getElementById('menuSimpleForm');
+    if (menuForm) {
+        menuForm.addEventListener('submit', function(e) {
+            let hasItems = false;
+            quantityInputs.forEach(function(input) {
+                if ((parseInt(input.value) || 0) > 0) {
+                    hasItems = true;
+                }
+            });
+            
+            if (!hasItems) {
+                e.preventDefault();
+                alert('Por favor selecciona al menos un plato para realizar el pedido.');
+                return false;
+            }
+            
+            return true;
+        });
+    }
+    
+    // Inicializar
+    updateOrderSummary();
+});
+</script>
+{% endblock %}

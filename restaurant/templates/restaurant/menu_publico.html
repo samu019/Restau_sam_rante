@@ -1,0 +1,550 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+
+{% block title %}Menú - {{ restaurante.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- HEADER DEL RESTAURANTE MEJORADO -->
+    <div class="restaurant-header text-center mb-5">
+        {% if restaurante.logo %}
+        <img src="{{ restaurante.logo.url }}" alt="{{ restaurante.nombre }}" class="restaurant-logo mb-3" style="max-height: 120px;">
+        {% endif %}
+        <h1 class="display-4 fw-bold text-primary">{{ restaurante.nombre }}</h1>
+        
+        <!-- INFORMACIÓN Y CALIFICACIÓN DEL RESTAURANTE -->
+        <div class="restaurant-info mt-3">
+            {% if restaurante.direccion %}
+            <p class="mb-1">
+                <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                {{ restaurante.direccion }}
+            </p>
+            {% endif %}
+            {% if restaurante.telefono %}
+            <p class="mb-2">
+                <i class="fas fa-phone text-success me-2"></i>
+                {{ restaurante.telefono }}
+            </p>
+            {% endif %}
+            
+            <!-- CALIFICACIÓN DEL RESTAURANTE -->
+            <div class="restaurant-rating">
+                <div class="d-flex align-items-center justify-content-center">
+                    <span class="badge bg-warning text-dark fs-6 me-2">
+                        <i class="fas fa-star me-1"></i>
+                        {{ estadisticas_resenas.promedio|default:"0.0" }}
+                    </span>
+                    <span class="text-muted">
+                        {{ estadisticas_resenas.total }}  reseña{{ restaurante.total_resenas|pluralize }})
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTONES DE ACCIÓN MEJORADOS -->
+    <div class="text-center mb-4">
+        <div class="btn-group" role="group">
+            <a href="{% url 'ver_carrito' restaurante.id %}" class="btn btn-success btn-lg">
+                <i class="fas fa-shopping-cart me-2"></i>
+                Ver Mi Carrito 
+                <span id="cart-badge" class="badge bg-warning text-dark ms-2">0</span>
+            </a>
+            <a href="{% url 'explorar_restaurantes' %}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-utensils me-2"></i>
+                Explorar Más Restaurantes
+            </a>
+        </div>
+    </div>
+
+    <!-- RESUMEN DEL MENÚ MEJORADO -->
+    <div class="menu-summary card border-0 shadow-sm mb-5">
+        <div class="card-body text-center py-4">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <h3 class="text-primary mb-1">{{ categorias|length }}</h3>
+                        <p class="text-muted mb-0">Categorías</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <h3 class="text-success mb-1">{{ categorias_con_platos|length }}</h3>
+                        <p class="text-muted mb-0">Categorías Activas</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <h3 class="text-warning mb-1" id="total-platos">0</h3>
+                        <p class="text-muted mb-0">Platos Disponibles</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <h3 class="text-info mb-1">{{ restaurante.promedio_calificaciones|default:"0.0" }}</h3>
+                        <p class="text-muted mb-0">Calificación</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVEGACIÓN DE CATEGORÍAS -->
+    {% if categorias %}
+    <div class="categories-navigation mb-5">
+        <div class="row">
+            <div class="col-12">
+                <h3 class="text-center mb-4">Nuestras Categorías</h3>
+                <div class="d-flex flex-wrap gap-3 justify-content-center">
+                    {% for categoria in categorias %}
+                    <a href="#categoria-{{ categoria.id }}" class="category-nav-btn btn btn-outline-primary btn-lg px-4 py-2">
+                        <span class="emoji me-2">{{ categoria.emoji }}</span>
+                        {{ categoria.nombre }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- MENÚ POR CATEGORÍAS CON RESEÑAS -->
+    {% if categorias_con_platos %}
+        {% for item in categorias_con_platos %}
+        <section id="categoria-{{ item.categoria.id }}" class="category-section mb-5 pb-5 border-bottom">
+            <div class="category-header d-flex align-items-center justify-content-between mb-4">
+                <div class="d-flex align-items-center">
+                    <span class="category-emoji display-4 me-3">{{ item.categoria.emoji }}</span>
+                    <div>
+                        <h2 class="category-title h1 mb-1">{{ item.categoria.nombre }}</h2>
+                        {% if item.categoria.descripcion %}
+                        <p class="category-description text-muted lead mb-0">{{ item.categoria.descripcion }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <span class="badge bg-primary fs-6 px-3 py-2">
+                    {{ item.platos|length }} plato{{ item.platos|length|pluralize }}
+                </span>
+            </div>
+
+            {% if item.platos %}
+            <div class="row g-4">
+                {% for plato in item.platos %}
+                <div class="col-xl-4 col-lg-6 col-md-6">
+                    <div class="dish-card card h-100 border-0 shadow-hover">
+                        <div class="dish-image-container position-relative">
+                            {% if plato.imagen %}
+                            <img src="{{ plato.imagen.url }}" class="dish-image card-img-top" alt="{{ plato.nombre }}">
+                            {% else %}
+                            <div class="dish-placeholder bg-light d-flex align-items-center justify-content-center">
+                                <i class="fas fa-utensils fa-4x text-muted"></i>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Badges -->
+                            <div class="dish-badges position-absolute top-0 end-0 p-2">
+                                {% if plato.es_popular %}
+                                <span class="badge bg-warning text-dark mb-1">
+                                    <i class="fas fa-star me-1"></i>Popular
+                                </span>
+                                {% endif %}
+                                {% if plato.es_recomendado %}
+                                <span class="badge bg-info text-white">
+                                    <i class="fas fa-thumbs-up me-1"></i>Recomendado
+                                </span>
+                                {% endif %}
+                                
+                                <!-- CALIFICACIÓN DEL PLATO -->
+                                {% if plato.promedio_calificaciones > 0 %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-star me-1"></i>{{ plato.promedio_calificaciones }}
+                                </span>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Stock Status -->
+                            <div class="stock-status position-absolute top-0 start-0 p-2">
+                                {% if plato.stock_ilimitado or plato.stock > 0 %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check me-1"></i>Disponible
+                                </span>
+                                {% else %}
+                                <span class="badge bg-danger">
+                                    <i class="fas fa-times me-1"></i>Agotado
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="card-body d-flex flex-column p-4">
+                            <div class="dish-header mb-3">
+                                <h3 class="dish-name h4 mb-2">{{ plato.nombre }}</h3>
+                                <p class="dish-description text-muted mb-3">
+                                    {{ plato.descripcion }}
+                                </p>
+                                
+                                <!-- RESEÑAS DEL PLATO -->
+                                {% if plato.total_resenas > 0 %}
+                                <div class="dish-reviews mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <div class="star-rating me-2">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= plato.promedio_calificaciones %}
+                                                    <i class="fas fa-star text-warning"></i>
+                                                {% else %}
+                                                    <i class="far fa-star text-warning"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        <small class="text-muted">
+                                            ({{ plato.total_resenas }} reseña{{ plato.total_resenas|pluralize }})
+                                        </small>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="dish-details mt-auto">
+                                <div class="price-section mb-3">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <span class="current-price h3 text-primary fw-bold">
+                                                ${{ plato.precio }}
+                                            </span>
+                                            {% if plato.precio_promocion %}
+                                            <span class="original-price text-muted text-decoration-line-through ms-2 fs-5">
+                                                ${{ plato.precio_promocion }}
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="preparation-time text-muted">
+                                            <i class="fas fa-clock me-1"></i>
+                                            {{ plato.tiempo_preparacion }} min
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Add to Cart Button -->
+                                {% if plato.stock_ilimitado or plato.stock > 0 %}
+                                <button class="btn btn-primary btn-lg w-100 add-to-cart-btn"
+                                        data-plato-id="{{ plato.id }}"
+                                        data-restaurante-id="{{ restaurante.id }}"
+                                        data-plato-nombre="{{ plato.nombre }}">
+                                    <i class="fas fa-cart-plus me-2"></i>
+                                    Agregar al Carrito
+                                </button>
+                                {% else %}
+                                <button class="btn btn-outline-secondary btn-lg w-100" disabled>
+                                    <i class="fas fa-ban me-2"></i>
+                                    No Disponible
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-category text-center py-5">
+                <i class="fas fa-utensils fa-4x text-muted mb-4"></i>
+                <h4 class="text-muted mb-3">Próximamente en esta categoría</h4>
+                <p class="text-muted">Estamos trabajando para añadir nuevos platos.</p>
+            </div>
+            {% endif %}
+        </section>
+        {% endfor %}
+    {% else %}
+    <!-- EMPTY MENU STATE -->
+    <div class="empty-menu text-center py-5 my-5">
+        <div class="empty-icon mb-4">
+            <i class="fas fa-clipboard-list fa-5x text-muted"></i>
+        </div>
+        <h2 class="text-muted mb-3">Menú en Preparación</h2>
+        <p class="text-muted lead mb-4">
+            Este restaurante está preparando su menú especial para ti.<br>
+            Vuelve pronto para descubrir sus deliciosos platos.
+        </p>
+        <a href="{% url 'explorar_restaurantes' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-arrow-left me-2"></i>
+            Explorar Otros Restaurantes
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.dish-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.dish-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.dish-image-container {
+    height: 250px;
+    overflow: hidden;
+}
+
+.dish-image, .dish-placeholder {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.dish-placeholder {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.category-nav-btn {
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    border-width: 2px;
+}
+
+.category-nav-btn:hover {
+    transform: scale(1.05);
+}
+
+.category-section {
+    scroll-margin-top: 100px;
+}
+
+.menu-summary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 20px;
+}
+
+.menu-summary .stat-item h3 {
+    color: white !important;
+}
+
+.menu-summary .text-muted {
+    color: rgba(255,255,255,0.8) !important;
+}
+
+.restaurant-header {
+    padding: 2rem 0;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 20px;
+    margin-top: 1rem;
+}
+
+.add-to-cart-btn {
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.add-to-cart-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.category-emoji {
+    font-size: 3rem;
+}
+
+.star-rating {
+    font-size: 0.9rem;
+}
+
+.dish-reviews {
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+}
+
+.restaurant-rating .badge {
+    font-size: 1.1rem;
+    padding: 0.5rem 1rem;
+}
+
+@media (max-width: 768px) {
+    .category-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .category-emoji {
+        font-size: 2.5rem;
+    }
+    
+    .dish-card {
+        margin-bottom: 1.5rem;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .btn-group .btn {
+        border-radius: 10px !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Función para mostrar mensajes
+function showToast(message, type) {
+    var toast = document.createElement('div');
+    toast.className = 'alert alert-' + type + ' alert-dismissible fade show position-fixed';
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    
+    var icon = 'ℹ️';
+    if (type === 'success') icon = '✅';
+    else if (type === 'error') icon = '❌';
+    else if (type === 'warning') icon = '⚠️';
+    
+    toast.innerHTML = 
+        '<div class="d-flex align-items-center">' +
+            '<span class="me-2">' + icon + '</span>' +
+            '<span class="flex-grow-1">' + message + '</span>' +
+            '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+        '</div>';
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(function() {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 5000);
+}
+
+// Función para actualizar badge del carrito
+function actualizarBadgeCarrito() {
+    var badge = document.getElementById('cart-badge');
+    if (badge) {
+        var currentCount = parseInt(badge.textContent) || 0;
+        badge.textContent = currentCount + 1;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("🍽️ Menú cargado - Restaurante: {{ restaurante.nombre }}");
+    
+    // Calcular total de platos
+    function calcularTotalPlatos() {
+        var total = 0;
+        var sections = document.querySelectorAll('.category-section');
+        for (var i = 0; i < sections.length; i++) {
+            var platosEnCategoria = sections[i].querySelectorAll('.dish-card').length;
+            total += platosEnCategoria;
+        }
+        document.getElementById('total-platos').textContent = total;
+    }
+    
+    // Smooth scroll for category navigation
+    var categoryButtons = document.querySelectorAll('.category-nav-btn');
+    for (var i = 0; i < categoryButtons.length; i++) {
+        categoryButtons[i].addEventListener('click', function(e) {
+            e.preventDefault();
+            var targetId = this.getAttribute('href');
+            var targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    }
+    
+    // Add to cart functionality - MEJORADA
+    var addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
+    for (var i = 0; i < addToCartButtons.length; i++) {
+        addToCartButtons[i].addEventListener('click', function() {
+            var platoId = this.getAttribute('data-plato-id');
+            var restauranteId = this.getAttribute('data-restaurante-id');
+            var platoNombre = this.getAttribute('data-plato-nombre');
+            var button = this;
+            
+            // Add loading state
+            var originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Agregando...';
+            button.disabled = true;
+            
+            var formData = new FormData();
+            formData.append('plato_id', platoId);
+            formData.append('cantidad', '1');
+            
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/carrito/' + restauranteId + '/agregar/', true);
+            xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+            
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    try {
+                        var data = JSON.parse(xhr.responseText);
+                        if (data.success) {
+                            // Success feedback
+                            button.innerHTML = '<i class="fas fa-check me-2"></i>¡Agregado!';
+                            button.classList.remove('btn-primary');
+                            button.classList.add('btn-success');
+                            
+                            // Actualizar badge del carrito
+                            actualizarBadgeCarrito();
+                            
+                            // Show success message with product name
+                            showToast('✅ ' + platoNombre + ' agregado al carrito', 'success');
+                            
+                            // Reset button after 2 seconds
+                            setTimeout(function() {
+                                button.innerHTML = originalText;
+                                button.classList.remove('btn-success');
+                                button.classList.add('btn-primary');
+                                button.disabled = false;
+                            }, 2000);
+                        } else {
+                            // Error feedback
+                            button.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Error';
+                            button.classList.remove('btn-primary');
+                            button.classList.add('btn-danger');
+                            showToast('❌ ' + data.message, 'error');
+                            
+                            setTimeout(function() {
+                                button.innerHTML = originalText;
+                                button.classList.remove('btn-danger');
+                                button.classList.add('btn-primary');
+                                button.disabled = false;
+                            }, 3000);
+                        }
+                    } catch (e) {
+                        console.error('Error parsing response:', e);
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                        showToast('❌ Error en la respuesta del servidor', 'error');
+                    }
+                } else {
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                    showToast('❌ Error de conexión con el servidor', 'error');
+                }
+            };
+            
+            xhr.onerror = function() {
+                button.innerHTML = originalText;
+                button.disabled = false;
+                showToast('❌ Error de conexión de red', 'error');
+            };
+            
+            xhr.send(formData);
+        });
+    }
+    
+    // Calcular total de platos al cargar
+    calcularTotalPlatos();
+});
+</script>
+{% endblock %}

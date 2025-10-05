@@ -1,0 +1,93 @@
+<!-- templates/restaurant/eliminar_anuncio.html -->
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+
+{% block title %}Eliminar Anuncio - {{ anuncio.titulo }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Eliminar Anuncio
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Advertencia -->
+                    <div class="alert alert-warning">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            ¡Atención!
+                        </h6>
+                        <p class="mb-0">
+                            Estás a punto de eliminar el anuncio <strong>"{{ anuncio.titulo }}"</strong>. 
+                            Esta acción <strong>no se puede deshacer</strong>.
+                        </p>
+                    </div>
+
+                    <!-- Información del anuncio -->
+                    <div class="mb-4">
+                        <h6>Información del anuncio:</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Título:</strong> {{ anuncio.titulo }}</li>
+                            <li><strong>Mensaje:</strong> {{ anuncio.mensaje|truncatewords:20 }}</li>
+                            <li><strong>Fechas:</strong> {{ anuncio.fecha_inicio|date:"d/m/Y" }} al {{ anuncio.fecha_fin|date:"d/m/Y" }}</li>
+                            <li><strong>Estado:</strong> 
+                                {% if anuncio.esta_activo %}
+                                    <span class="badge bg-success">Activo</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Inactivo</span>
+                                {% endif %}
+                            </li>
+                            <li><strong>Destacado:</strong> 
+                                {% if anuncio.destacado %}
+                                    <i class="fas fa-star text-warning"></i> Sí
+                                {% else %}
+                                    <i class="fas fa-star text-muted"></i> No
+                                {% endif %}
+                            </li>
+                            <li><strong>Restaurante:</strong> {{ restaurante.nombre }}</li>
+                        </ul>
+                    </div>
+
+                    <!-- Imagen del anuncio -->
+                    {% if anuncio.imagen %}
+                    <div class="mb-4 text-center">
+                        <img src="{{ anuncio.imagen.url }}" alt="{{ anuncio.titulo }}" 
+                             class="img-fluid rounded" style="max-height: 200px;">
+                    </div>
+                    {% endif %}
+
+                    <!-- Formulario de confirmación -->
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="confirmacion" required>
+                                <label class="form-check-label" for="confirmacion">
+                                    Confirmo que deseo eliminar este anuncio permanentemente
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger flex-fill">
+                                <i class="fas fa-trash me-2"></i>
+                                Eliminar Anuncio
+                            </button>
+                            <a href="{% url 'administrar_anuncios' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

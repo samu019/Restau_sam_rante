@@ -1,0 +1,350 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+{% csrf_token %}
+{% block title %}Dashboard Mejorado - {{ restaurante.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- HEADER -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-gradient-primary text-white">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="display-6 fw-bold mb-2">
+                                <i class="fas fa-chart-line me-3"></i>Dashboard Mejorado
+                            </h1>
+                            <p class="lead mb-0">{{ restaurante.nombre }} - Métricas completas de tu restaurante</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="restaurant-logo">
+                                {% if restaurante.logo %}
+                                <img src="{{ restaurante.logo.url }}" alt="{{ restaurante.nombre }}" 
+                                     class="rounded-circle border border-3 border-white" 
+                                     style="width: 100px; height: 100px; object-fit: cover;">
+                                {% else %}
+                                <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center mx-auto" 
+                                     style="width: 100px; height: 100px;">
+                                    <i class="fas fa-utensils fa-2x text-white"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MÉTRICAS PRINCIPALES -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title text-muted mb-2">Platos Totales</h6>
+                            <h3 class="text-primary">{{ total_platos }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-utensils fa-2x text-primary opacity-25"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title text-muted mb-2">Pedidos Hoy</h6>
+                            <h3 class="text-success">{{ pedidos_hoy }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-shopping-cart fa-2x text-success opacity-25"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title text-muted mb-2">Pedidos Pendientes</h6>
+                            <h3 class="text-warning">{{ pedidos_pendientes }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clock fa-2x text-warning opacity-25"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title text-muted mb-2">Calificación</h6>
+                            <h3 class="text-info">{{ promedio_calificaciones|default:"0.0" }}</h3>
+                            <small class="text-muted">{{ total_resenas }} reseñas</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-star fa-2x text-info opacity-25"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- PEDIDOS RECIENTES -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>Pedidos Recientes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if ultimos_pedidos %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Cliente</th>
+                                        <th>Fecha</th>
+                                        <th>Estado</th>
+                                        <th>Total</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for pedido in ultimos_pedidos %}
+                                    <tr>
+                                        <td><strong>#{{ pedido.id }}</strong></td>
+                                        <td>{{ pedido.usuario.username }}</td>
+                                        <td>{{ pedido.fecha_creacion|date:"d M H:i" }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if pedido.estado == 'ENTREGADO' %}success{% elif pedido.estado == 'CANCELADO' %}danger{% else %}warning{% endif %}">
+                                                {{ pedido.get_estado_display }}
+                                            </span>
+                                        </td>
+                                        <td>${{ pedido.total }}</td>
+                                        <td>
+                                            <a href="{% url 'actualizar_estado_pedido' pedido.id %}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No hay pedidos recientes</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- PLATOS POPULARES -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-fire me-2"></i>Platos Mejor Calificados
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if platos_populares %}
+                        <div class="row">
+                            {% for plato in platos_populares %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card border h-100">
+                                    <div class="card-body text-center">
+                                        {% if plato.imagen %}
+                                        <img src="{{ plato.imagen.url }}" alt="{{ plato.nombre }}" 
+                                             class="img-fluid rounded mb-2" style="height: 80px; object-fit: cover;">
+                                        {% else %}
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center mx-auto mb-2" 
+                                             style="width: 80px; height: 80px;">
+                                            <i class="fas fa-utensils text-muted"></i>
+                                        </div>
+                                        {% endif %}
+                                        <h6 class="card-title mb-1">{{ plato.nombre }}</h6>
+                                        <div class="star-rating small mb-1">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= plato.avg_rating %}
+                                                    <i class="fas fa-star text-warning"></i>
+                                                {% else %}
+                                                    <i class="far fa-star text-warning"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        <small class="text-muted">({{ plato.num_resenas }} reseñas)</small>
+                                        <p class="text-success mb-0 mt-1"><strong>${{ plato.precio }}</strong></p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-utensils fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No hay platos con reseñas aún</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- SIDEBAR -->
+        <div class="col-lg-4">
+            <!-- RESEÑAS RECIENTES -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-star me-2"></i>Reseñas Recientes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if resenas_recientes %}
+                        {% for resena in resenas_recientes %}
+                        <div class="review-item border-bottom pb-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <strong>{{ resena.usuario.username }}</strong>
+                                <div class="star-rating">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= resena.calificacion %}
+                                            <i class="fas fa-star text-warning small"></i>
+                                        {% else %}
+                                            <i class="far fa-star text-warning small"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% if resena.plato %}
+                            <p class="text-muted small mb-1">
+                                <i class="fas fa-utensil-spoon me-1"></i>
+                                {{ resena.plato.nombre }}
+                            </p>
+                            {% endif %}
+                            <p class="mb-2 small">{{ resena.comentario|truncatewords:15 }}</p>
+                            <small class="text-muted">{{ resena.fecha_creacion|timesince }} ago</small>
+                        </div>
+                        {% endfor %}
+                        <div class="text-center mt-3">
+                            <a href="{% url 'gestion_resenas' %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-list me-1"></i>Ver Todas las Reseñas
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-star fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No hay reseñas recientes</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- ACCIONES RÁPIDAS -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt me-2"></i>Acciones Rápidas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'administrar_platos' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-utensils me-2"></i>Gestionar Platos
+                        </a>
+                        <a href="{% url 'pedidos' %}" class="btn btn-outline-success">
+                            <i class="fas fa-shopping-cart me-2"></i>Ver Todos los Pedidos
+                        </a>
+                        <a href="{% url 'gestion_resenas' %}" class="btn btn-outline-warning">
+                            <i class="fas fa-star me-2"></i>Gestionar Reseñas
+                        </a>
+                        <a href="{% url 'administrar_bebidas' %}" class="btn btn-outline-info">
+                            <i class="fas fa-wine-glass me-2"></i>Gestionar Bebidas
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ESTADÍSTICAS RÁPIDAS -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Resumen
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <span>Platos Activos</span>
+                            <span class="badge bg-primary rounded-pill">{{ total_platos }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <span>Pedidos Hoy</span>
+                            <span class="badge bg-success rounded-pill">{{ pedidos_hoy }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <span>Reseñas Totales</span>
+                            <span class="badge bg-warning rounded-pill">{{ total_resenas }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <span>Calificación</span>
+                            <span class="badge bg-info rounded-pill">{{ promedio_calificaciones|default:"0.0" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.card {
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.star-rating {
+    font-size: 0.8rem;
+}
+
+.review-item {
+    transition: background-color 0.3s ease;
+}
+
+.review-item:hover {
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    padding: 10px;
+    margin: -10px;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}

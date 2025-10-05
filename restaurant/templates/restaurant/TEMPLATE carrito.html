@@ -1,0 +1,231 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-shopping-cart me-2"></i>
+                        Tu Carrito - {{ restaurante.nombre }}
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if carrito.items %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Precio</th>
+                                    <th>Cantidad</th>
+                                    <th>Subtotal</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for key, item in carrito.items.items %}
+                                <tr class="item-carrito" data-plato-id="{{ item.plato_id }}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if item.imagen %}
+                                            <img src="{{ item.imagen }}" alt="{{ item.nombre }}" 
+                                                 class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                            {% else %}
+                                            <div class="bg-light rounded d-flex align-items-center justify-content-center me-3" 
+                                                 style="width: 60px; height: 60px;">
+                                                <i class="fas fa-utensils text-muted"></i>
+                                            </div>
+                                            {% endif %}
+                                            <div>
+                                                <h6 class="mb-0">{{ item.nombre }}</h6>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ item.precio }} FCFA</td>
+                                    <td>
+                                        <div class="input-group" style="max-width: 120px;">
+                                            <button class="btn btn-outline-secondary btn-sm btn-restar" type="button">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                            <input type="number" class="form-control form-control-sm text-center cantidad-item" 
+                                                   value="{{ item.cantidad }}" min="1">
+                                            <button class="btn btn-outline-secondary btn-sm btn-sumar" type="button">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td class="subtotal">{{ item.precio|floatformat:2 }} FCFA</td>
+                                    <td>
+                                        <button class="btn btn-outline-danger btn-sm btn-eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                        <h4>Tu carrito está vacío</h4>
+                        <p class="text-muted">Agrega algunos platos deliciosos para comenzar.</p>
+                        <a href="{% url 'menu_publico' restaurante.id %}" class="btn btn-primary">
+                            <i class="fas fa-utensils me-2"></i>Ver Menú
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        {% if carrito.items %}
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Resumen del Pedido</h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <span id="subtotal-total">0 FCFA</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Envío:</span>
+                        <span>0 FCFA</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Total:</strong>
+                        <strong id="total-final">0 FCFA</strong>
+                    </div>
+                    
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'realizar_pedido' restaurante.id %}" class="btn btn-success w-100 btn-lg">
+                        <i class="fas fa-credit-card me-2"></i>
+                        Finalizar Pedido
+                    </a>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <p class="mb-2">Debes iniciar sesión para realizar el pedido</p>
+                        <a href="{% url 'login' %}?next={% url 'ver_carrito' restaurante.id %}" class="btn btn-primary btn-sm w-100">
+                            Iniciar Sesión
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function calcularTotales() {
+        let subtotal = 0;
+        
+        document.querySelectorAll('.item-carrito').forEach(row => {
+            const precio = parseFloat(row.querySelector('td:nth-child(2)').textContent);
+            const cantidad = parseInt(row.querySelector('.cantidad-item').value);
+            const subtotalItem = precio * cantidad;
+            
+            row.querySelector('.subtotal').textContent = subtotalItem.toFixed(2) + ' FCFA';
+            subtotal += subtotalItem;
+        });
+        
+        document.getElementById('subtotal-total').textContent = subtotal.toFixed(2) + ' FCFA';
+        document.getElementById('total-final').textContent = subtotal.toFixed(2) + ' FCFA';
+    }
+    
+    // Botones de cantidad
+    document.querySelectorAll('.btn-sumar').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const input = this.closest('.input-group').querySelector('.cantidad-item');
+            input.value = parseInt(input.value) + 1;
+            actualizarCantidad(input);
+        });
+    });
+    
+    document.querySelectorAll('.btn-restar').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const input = this.closest('.input-group').querySelector('.cantidad-item');
+            if (parseInt(input.value) > 1) {
+                input.value = parseInt(input.value) - 1;
+                actualizarCantidad(input);
+            }
+        });
+    });
+    
+    // Input directo
+    document.querySelectorAll('.cantidad-item').forEach(input => {
+        input.addEventListener('change', function() {
+            if (parseInt(this.value) < 1) this.value = 1;
+            actualizarCantidad(this);
+        });
+    });
+    
+    // Eliminar item
+    document.querySelectorAll('.btn-eliminar').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const row = this.closest('.item-carrito');
+            const platoId = row.getAttribute('data-plato-id');
+            
+            fetch(`{% url 'actualizar_carrito' restaurante.id %}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    accion: 'eliminar',
+                    plato_id: platoId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    row.remove();
+                    calcularTotales();
+                    // Recargar si el carrito queda vacío
+                    if (document.querySelectorAll('.item-carrito').length === 0) {
+                        location.reload();
+                    }
+                }
+            });
+        });
+    });
+    
+    function actualizarCantidad(input) {
+        const row = input.closest('.item-carrito');
+        const platoId = row.getAttribute('data-plato-id');
+        const cantidad = parseInt(input.value);
+        
+        fetch(`{% url 'actualizar_carrito' restaurante.id %}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                accion: 'actualizar',
+                plato_id: platoId,
+                cantidad: cantidad
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                calcularTotales();
+            }
+        });
+    }
+    
+    // Calcular totales iniciales
+    calcularTotales();
+});
+</script>
+{% endblock %}

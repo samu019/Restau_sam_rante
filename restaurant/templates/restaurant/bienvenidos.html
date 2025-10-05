@@ -1,0 +1,90 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+{% csrf_token %}
+{% block content %}
+<!-- Sección de Bienvenida -->
+<div class="bienvenida-section">
+    <div class="container">
+        <div class="bienvenida-box">
+            <h2>¡Bienvenidos a los Restaurantes!</h2>
+            <h4>Descubre nuestra oferta gastronómica, nuestros platos deliciosos, y nuestras ofertas exclusivas.</h4>
+            <p>En nuestro grupo de restaurantes, te invitamos a explorar una amplia variedad de opciones culinarias que hemos preparado especialmente para ti. Ofrecemos platillos tradicionales, innovadores y un servicio de alta calidad para que disfrutes de cada momento.</p>
+            <p>Explora nuestro menú, disfruta de nuestras ofertas y servicios, y no dudes en contactarnos para cualquier consulta.</p>
+            <a href="{% url 'restaurantes' %}" class="welcome-btn">Explorar Restaurantes</a>
+        </div>
+    </div>
+</div>
+
+<!-- Características -->
+<section class="features-section py-5">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="section-title">¿Por Qué Elegirnos?</h2>
+                <p class="section-subtitle">Descubre lo que nos hace especiales</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <h4>Comida de Calidad</h4>
+                    <p>Ingredientes frescos y recetas tradicionales preparadas con pasión por nuestros chefs expertos.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shipping-fast"></i>
+                    </div>
+                    <h4>Delivery Rápido</h4>
+                    <p>Servicio de entrega rápido y eficiente para que disfrutes de tu comida caliente en casa.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <h4>Ofertas Especiales</h4>
+                    <p>Promociones exclusivas y descuentos para nuestros clientes frecuentes.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Estadísticas -->
+<section class="stats-section py-5">
+    <div class="container">
+        <div class="row text-center g-4">
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <h3 class="stat-number">50+</h3>
+                    <p class="stat-label">Platillos Únicos</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <h3 class="stat-number">1000+</h3>
+                    <p class="stat-label">Clientes Satisfechos</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <h3 class="stat-number">5</h3>
+                    <p class="stat-label">Años de Experiencia</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <h3 class="stat-number">24/7</h3>
+                    <p class="stat-label">Servicio al Cliente</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

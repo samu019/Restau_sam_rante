@@ -1,0 +1,123 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+{% csrf_token %}
+{% block content %}
+<!-- Hero Section Categorías -->
+<section class="categories-hero py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold mb-4">Nuestras Categorías</h1>
+                <p class="lead">Explora nuestra variedad de platos organizados por categorías</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Sección de Categorías -->
+<section class="categories-section py-5">
+    <div class="container">
+        <div class="row g-4">
+            {% for categoria in categorias %}
+            <div class="col-lg-4 col-md-6">
+                <div class="category-card">
+                    <div class="category-image">
+                        {% if categoria.imagen %}
+                            <img src="{{ categoria.imagen.url }}" alt="{{ categoria.nombre }}" class="img-fluid">
+                        {% else %}
+                            <div class="category-placeholder">
+                                <i class="fas fa-utensils"></i>
+                            </div>
+                        {% endif %}
+                        <div class="category-overlay">
+                            <a href="{% url 'platos_por_categoria' categoria.id %}" class="btn-category">
+                                Ver Platos <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="category-content">
+                        <h3 class="category-title">{{ categoria.nombre }}</h3>
+                        <p class="category-description">
+                            {% if categoria.descripcion %}
+                                {{ categoria.descripcion }}
+                            {% else %}
+                                Descubre los deliciosos platos disponibles en esta categoría
+                            {% endif %}
+                        </p>
+                        <div class="category-meta">
+                            <span class="badge bg-warning text-dark">
+                                <i class="fas fa-utensil-spoon me-1"></i>
+                                {{ categoria.plato_set.count }} platos
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="no-categories text-center py-5">
+                    <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                    <h3>No hay categorías disponibles</h3>
+                    <p class="text-muted">Próximamente añadiremos nuevas categorías de platos.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Información Adicional -->
+<section class="categories-info bg-light py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h2 class="mb-4">Variedad Gastronómica</h2>
+                <p class="lead mb-4">
+                    Ofrecemos una amplia gama de categorías culinarias para satisfacer todos los gustos 
+                    y preferencias. Desde platos tradicionales hasta opciones innovadoras.
+                </p>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="info-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Ingredientes frescos
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Recetas exclusivas
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Preparación artesanal
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Calidad garantizada
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="categories-stats text-center">
+                    <div class="row">
+                        <div class="col-6 mb-4">
+                            <div class="stat-circle">
+                                <h3 class="stat-number">{{ categorias.count }}</h3>
+                                <p class="stat-label">Categorías</p>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-4">
+                            <div class="stat-circle">
+                                <h3 class="stat-number">50+</h3>
+                                <p class="stat-label">Platos Únicos</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

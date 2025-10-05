@@ -1,0 +1,114 @@
+/* Estilos generales */
+body {
+    background-color: #f7f7f7;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+/* Contenedor principal del formulario */
+.form-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100vh;
+    background-color: #f7f7f7;
+}
+
+/* Caja del formulario con el fondo y manchas negras */
+.form-box {
+    background-color: #ffcc00; /* Color de fondo amarillo fuerte */
+    background-image: url('https://via.placeholder.com/1500x1500'); /* Imagen de manchas negras */
+    background-size: cover;
+    background-position: center;
+    padding: 40px 20px;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+/* Efecto de hover para el formulario */
+.form-box:hover {
+    transform: scale(1.05);
+}
+
+/* Título del formulario */
+h2 {
+    color: #fff;
+    margin-bottom: 20px;
+}
+
+/* Estilo para los inputs */
+.form-input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 8px;
+    background-color: #fff;
+    color: #333;
+    font-size: 16px;
+}
+
+/* Estilo al hacer focus en los inputs */
+.form-input:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(255, 140, 0, 0.8);
+}
+
+/* Estilo del botón */
+.btn-submit {
+    padding: 14px;
+    background-color: #333;
+    color: white;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+}
+
+/* Efecto de hover para el botón */
+.btn-submit:hover {
+    background-color: #ffcc00;
+    color: black;
+}
+
+/* Estilos del enlace */
+a {
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+a:hover {
+    color: #ffcc00;
+}
+
+/* Clase para centrar el texto */
+.text-center {
+    text-align: center;
+}
+
+/* Margen superior */
+.mt-3 {
+    margin-top: 20px;
+}
+
+/* Estilos responsivos para pantallas pequeñas */
+@media (max-width: 600px) {
+    .form-box {
+        padding: 30px 15px;
+    }
+
+    .form-input, .btn-submit {
+        font-size: 14px;
+    }
+}

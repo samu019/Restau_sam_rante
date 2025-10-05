@@ -1,0 +1,156 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+{% csrf_token %}
+{% block content %}
+<!-- Hero Section -->
+<section class="contact-hero bg-primary text-white py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold">Contáctanos</h1>
+                <p class="lead">Estamos aquí para ayudarte. ¡Nos encanta escuchar a nuestros clientes!</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Información de Contacto -->
+            <div class="col-lg-6">
+                <div class="contact-card p-4 h-100">
+                    <h3 class="mb-4">Información de Contacto</h3>
+                    
+                    <div class="contact-item d-flex align-items-center mb-4">
+                        <div class="contact-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">Teléfono</h5>
+                            <p class="mb-0 text-muted">+7 991 761 14 62</p>
+                        </div>
+                    </div>
+
+                    <div class="contact-item d-flex align-items-center mb-4">
+                        <div class="contact-icon bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                            <i class="fab fa-telegram"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">Telegram</h5>
+                            <p class="mb-0">
+                                <a href="https://t.me/ma12346707" target="_blank" class="text-decoration-none">https://t.me/ma12346707</a>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="contact-item d-flex align-items-center mb-4">
+                        <div class="contact-icon bg-danger text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">Email</h5>
+                            <p class="mb-0 text-muted">mbaesonojuanbenjaminmba@gmail.com</p>
+                        </div>
+                    </div>
+
+                    <div class="contact-item d-flex align-items-center mb-4">
+                        <div class="contact-icon bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">Dirección</h5>
+                            <p class="mb-0 text-muted">бориса галушкина 9 , Москва</p>
+                        </div>
+                    </div>
+
+                    <div class="contact-item d-flex align-items-center mb-4">
+                        <div class="contact-icon bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">Sitio Web</h5>
+                            <p class="mb-0">
+                                <a href="https://www.restaurantes.com" target="_blank" class="text-decoration-none">www.restaurantes.com</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario de Contacto -->
+            <div class="col-lg-6">
+                <div class="contact-form-card p-4 h-100">
+                    <h3 class="mb-4">Envíanos un Mensaje</h3>
+                    <form id="contactForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="firstName" class="form-label">Nombre</label>
+                                <input type="text" class="form-control" id="firstName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="lastName" class="form-label">Apellido</label>
+                                <input type="text" class="form-control" id="lastName" required>
+                            </div>
+                            <div class="col-12">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" required>
+                            </div>
+                            <div class="col-12">
+                                <label for="phone" class="form-label">Teléfono</label>
+                                <input type="tel" class="form-control" id="phone">
+                            </div>
+                            <div class="col-12">
+                                <label for="message" class="form-label">Mensaje</label>
+                                <textarea class="form-control" id="message" rows="5" required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary btn-lg w-100">
+                                    <i class="fas fa-paper-plane me-2"></i>Enviar Mensaje
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mapa y Información Adicional -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="additional-info text-center p-4">
+                    <h3 class="mb-3">Nuestro Compromiso</h3>
+                    <p class="lead mb-4">
+                        Estamos comprometidos con brindarte la mejor experiencia en gastronomía. 
+                        Tu satisfacción es nuestra prioridad número uno.
+                    </p>
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="feature-item">
+                                <i class="fas fa-clock fa-2x text-primary mb-3"></i>
+                                <h5>Horario de Atención</h5>
+                                <p class="text-muted">Lunes a Domingo: 8:00 AM - 20:00 PM</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="feature-item">
+                                <i class="fas fa-shipping-fast fa-2x text-primary mb-3"></i>
+                                <h5>Delivery Gratis</h5>
+                                <p class="text-muted">En pedidos mayores a $5</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="feature-item">
+                                <i class="fas fa-headset fa-2x text-primary mb-3"></i>
+                                <h5>Soporte 24/7</h5>
+                                <p class="text-muted">Estamos siempre para ayudarte</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

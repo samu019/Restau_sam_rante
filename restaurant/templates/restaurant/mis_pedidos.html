@@ -1,0 +1,136 @@
+<!-- restaurant/templates/restaurant/mis_pedidos.html -->
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+
+{% csrf_token %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="fas fa-shopping-bag me-2"></i>Mis Pedidos
+            </h1>
+            
+            <!-- Panel de Debug Temporal -->
+            <div class="alert alert-info">
+                <strong>🔍 DEBUG:</strong> {{ pedidos|length }} pedidos encontrados para {{ request.user.username }}
+            </div>
+        </div>
+    </div>
+
+    {% if pedidos %}
+    <div class="row">
+        {% for pedido in pedidos %}
+        <div class="col-12 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">Pedido #{{ pedido.id }}</h5>
+                        <small class="text-muted">{{ pedido.fecha_creacion|date:"d/m/Y H:i" }}</small>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge {% if pedido.estado == 'completado' %}bg-success{% elif pedido.estado == 'preparando' %}bg-warning{% elif pedido.estado == 'pendiente' %}bg-info{% else %}bg-secondary{% endif %} fs-6">
+                            {{ pedido.estado|title }}
+                        </span>
+                        <div class="mt-1">
+                            <strong class="text-primary fs-5">${{ pedido.total }}</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>🏪 Restaurante:</strong> {{ pedido.restaurante.nombre }}</p>
+                            <p><strong>📞 Contacto:</strong> {{ pedido.telefono_contacto|default:"No especificado" }}</p>
+                            <p><strong>📍 Dirección:</strong> {{ pedido.direccion_entrega|default:"Recoger en local" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>💳 Método de pago:</strong> {{ pedido.metodo_pago|title }}</p>
+                            <p><strong>📅 Entrega:</strong> 
+                                {% if pedido.fecha_entrega %}
+                                    {{ pedido.fecha_entrega|date:"d/m/Y H:i" }}
+                                {% else %}
+                                    Por confirmar
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Items del Pedido -->
+                    <h6 class="mb-3">🛍️ Items del pedido:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th class="text-center">Cantidad</th>
+                                    <th class="text-end">Precio</th>
+                                    <th class="text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in pedido.items.all %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ item.plato.nombre }}</strong>
+                                        {% if item.notas %}
+                                        <br><small class="text-muted">{{ item.notas }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">{{ item.cantidad }}</td>
+                                    <td class="text-end">${{ item.plato.precio }}</td>
+                                    <td class="text-end">${{ item.subtotal }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-active">
+                                    <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                    <td class="text-end"><strong>${{ pedido.total }}</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    
+                    {% if pedido.notas %}
+                    <div class="alert alert-warning mt-3">
+                        <strong>📝 Notas:</strong> {{ pedido.notas }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="card-footer bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            ID: {{ pedido.id }} • Creado: {{ pedido.fecha_creacion|timesince }}
+                        </small>
+                        <a href="{% url 'detalle_pedido' pedido.id %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-eye me-1"></i>Ver Detalle
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- No hay pedidos -->
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-shopping-bag fa-4x text-muted mb-4"></i>
+                <h3 class="text-muted">No tienes pedidos aún</h3>
+                <p class="text-muted mb-4">Realiza tu primer pedido para verlo aquí.</p>
+                <a href="{% url 'home' %}" class="btn btn-warning btn-lg">
+                    <i class="fas fa-utensils me-2"></i>Explorar Restaurantes
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

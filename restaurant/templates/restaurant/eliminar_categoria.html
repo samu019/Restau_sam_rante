@@ -1,0 +1,85 @@
+<!-- templates/restaurant/eliminar_categoria.html -->
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+
+{% block title %}Eliminar Categoría - {{ categoria.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Eliminar Categoría
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Advertencia -->
+                    <div class="alert alert-warning">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            ¡Atención!
+                        </h6>
+                        <p class="mb-0">
+                            Estás a punto de eliminar la categoría <strong>"{{ categoria.nombre }}"</strong>. 
+                            Esta acción <strong>no se puede deshacer</strong>.
+                        </p>
+                    </div>
+
+                    <!-- Información de la categoría -->
+                    <div class="mb-4">
+                        <h6>Información de la categoría:</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Nombre:</strong> {{ categoria.nombre }}</li>
+                            <li><strong>Emoji:</strong> {{ categoria.emoji }}</li>
+                            <li><strong>Platos en esta categoría:</strong> {{ categoria.platos.count }}</li>
+                            <li><strong>Restaurante:</strong> {{ restaurante.nombre }}</li>
+                        </ul>
+                    </div>
+
+                    <!-- Advertencia sobre platos -->
+                    {% if categoria.platos.exists %}
+                    <div class="alert alert-danger">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            ¡Cuidado!
+                        </h6>
+                        <p class="mb-0">
+                            Esta categoría tiene <strong>{{ categoria.platos.count }} plato(s)</strong>. 
+                            Si eliminas la categoría, estos platos quedarán sin categoría asignada.
+                        </p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Formulario de confirmación -->
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="confirmacion" required>
+                                <label class="form-check-label" for="confirmacion">
+                                    Confirmo que deseo eliminar esta categoría permanentemente
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger flex-fill">
+                                <i class="fas fa-trash me-2"></i>
+                                Eliminar Categoría
+                            </button>
+                            <a href="{% url 'administrar_categorias' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

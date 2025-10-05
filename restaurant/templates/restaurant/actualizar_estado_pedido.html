@@ -1,0 +1,196 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+{% csrf_token %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0"><i class="fas fa-sync-alt me-2"></i>Actualizar Estado del Pedido</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Actualizando estado del <strong>Pedido #{{ pedido.id }}</strong>
+                    </div>
+
+                    <!-- Información del Pedido -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">Información del Pedido</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Cliente:</strong> {{ pedido.usuario.username }}</p>
+                                    <p><strong>Teléfono:</strong> {{ pedido.telefono_contacto|default:"No proporcionado" }}</p>
+                                    <p><strong>Dirección:</strong> {{ pedido.direccion_entrega|default:"No proporcionada" }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Total:</strong> ${{ pedido.total }}</p>
+                                    <p><strong>Fecha:</strong> {{ pedido.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                                    <p>
+                                        <strong>Estado Actual:</strong> 
+                                        <span class="badge 
+                                            {% if pedido.estado == 'PENDIENTE' %}bg-warning
+                                            {% elif pedido.estado == 'CONFIRMADO' %}bg-info
+                                            {% elif pedido.estado == 'PREPARACION' %}bg-primary
+                                            {% elif pedido.estado == 'LISTO' %}bg-success
+                                            {% elif pedido.estado == 'EN_CAMINO' %}bg-secondary
+                                            {% elif pedido.estado == 'ENTREGADO' %}bg-dark
+                                            {% else %}bg-light text-dark{% endif %}">
+                                            {{ pedido.get_estado_display }}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Items del Pedido -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">Items del Pedido</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Plato</th>
+                                            <th>Cantidad</th>
+                                            <th>Precio Unit.</th>
+                                            <th>Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in pedido.items.all %}
+                                        <tr>
+                                            <td>{{ item.plato.nombre }}</td>
+                                            <td>{{ item.cantidad }}</td>
+                                            <td>${{ item.precio_unitario }}</td>
+                                            <td>${{ item.subtotal }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                            <td><strong>${{ pedido.total }}</strong></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Formulario de Actualización -->
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Nuevo Estado *</label>
+                                    {{ form.estado }}
+                                    {% if form.estado.errors %}
+                                    <div class="text-danger small">{{ form.estado.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Método de Pago</label>
+                                    {{ form.metodo_pago }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Notas Adicionales</label>
+                            {{ form.notas }}
+                            <div class="form-text">
+                                Agrega cualquier información adicional sobre este pedido.
+                            </div>
+                        </div>
+
+                        <!-- Timeline de Estados -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Progreso del Pedido</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="timeline-pedido">
+                                    <div class="timeline-step {% if pedido.estado != 'PENDIENTE' %}completed{% endif %}">
+                                        <div class="timeline-icon">
+                                            <i class="fas fa-shopping-cart"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h6>Pendiente</h6>
+                                            <small>Pedido recibido</small>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-step {% if pedido.estado == 'CONFIRMADO' or pedido.estado == 'PREPARACION' or pedido.estado == 'LISTO' or pedido.estado == 'EN_CAMINO' or pedido.estado == 'ENTREGADO' %}completed{% endif %}">
+                                        <div class="timeline-icon">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h6>Confirmado</h6>
+                                            <small>Pedido confirmado</small>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-step {% if pedido.estado == 'PREPARACION' or pedido.estado == 'LISTO' or pedido.estado == 'EN_CAMINO' or pedido.estado == 'ENTREGADO' %}completed{% endif %}">
+                                        <div class="timeline-icon">
+                                            <i class="fas fa-utensils"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h6>Preparación</h6>
+                                            <small>En preparación</small>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-step {% if pedido.estado == 'LISTO' or pedido.estado == 'EN_CAMINO' or pedido.estado == 'ENTREGADO' %}completed{% endif %}">
+                                        <div class="timeline-icon">
+                                            <i class="fas fa-check-double"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h6>Listo</h6>
+                                            <small>Preparado</small>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-step {% if pedido.estado == 'EN_CAMINO' or pedido.estado == 'ENTREGADO' %}completed{% endif %}">
+                                        <div class="timeline-icon">
+                                            <i class="fas fa-shipping-fast"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h6>En Camino</h6>
+                                            <small>En reparto</small>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-step {% if pedido.estado == 'ENTREGADO' %}completed{% endif %}">
+                                        <div class="timeline-icon">
+                                            <i class="fas fa-box-check"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h6>Entregado</h6>
+                                            <small>Completado</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{% url 'pedidos' %}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-arrow-left me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-2"></i>Actualizar Estado
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

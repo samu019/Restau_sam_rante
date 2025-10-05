@@ -1,0 +1,313 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+
+{% block title %}Explorar Restaurantes - FoodDelivery{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- HERO SECTION -->
+    <div class="hero-section bg-primary text-white rounded-3 p-5 mb-5">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-3">Descubre Restaurantes Increíbles</h1>
+                <p class="lead mb-4">Encuentra tu comida favorita y ordena desde los mejores restaurantes de tu zona.</p>
+                
+                <!-- BARRA DE BÚSQUEDA -->
+                <form method="get" class="search-form">
+                    <div class="input-group input-group-lg">
+                        <input type="text" name="q" class="form-control" 
+                               placeholder="Buscar restaurantes, platos o categorías..." 
+                               value="{{ query }}">
+                        <button class="btn btn-warning text-dark" type="submit">
+                            <i class="fas fa-search me-2"></i>Buscar
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-lg-4 text-center">
+                <i class="fas fa-utensils fa-8x text-warning opacity-75"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- ESTADÍSTICAS RÁPIDAS -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <h3 class="text-primary">{{ stats.total_restaurantes }}</h3>
+                    <p class="text-muted mb-0">Restaurantes Activos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <h3 class="text-success">{{ stats.restaurantes_con_resenas }}</h3>
+                    <p class="text-muted mb-0">Con Reseñas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <h3 class="text-warning">{{ categorias|length }}</h3>
+                    <p class="text-muted mb-0">Categorías Únicas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-filter me-2"></i>Filtrar Restaurantes
+                    </h5>
+                    <form method="get" class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Buscar</label>
+                            <input type="text" name="q" class="form-control" 
+                                   placeholder="Nombre, dirección..." value="{{ query }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Categoría</label>
+                            <input type="text" name="categoria" class="form-control" 
+                                   placeholder="Ej: Pizza, Sushi..." value="{{ categoria_filter }}">
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>Aplicar Filtros
+                            </button>
+                            <a href="{% url 'explorar_restaurantes' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Limpiar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LISTA DE RESTAURANTES -->
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-store me-2"></i>
+                Restaurantes Disponibles
+                <span class="badge bg-primary fs-6 ms-2">{{ restaurantes.count }}</span>
+            </h2>
+
+            {% if restaurantes %}
+                <div class="row g-4">
+                    {% for restaurante in restaurantes %}
+                    <div class="col-xl-4 col-lg-6 col-md-6">
+                        <div class="restaurant-card card h-100 border-0 shadow-hover">
+                            <div class="restaurant-image-container position-relative">
+                                {% if restaurante.logo %}
+                                <img src="{{ restaurante.logo.url }}" class="card-img-top restaurant-image" 
+                                     alt="{{ restaurante.nombre }}" style="height: 200px; object-fit: cover;">
+                                {% else %}
+                                <div class="restaurant-placeholder bg-light d-flex align-items-center justify-content-center" 
+                                     style="height: 200px;">
+                                    <i class="fas fa-utensils fa-3x text-muted"></i>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- BADGES -->
+                                <div class="position-absolute top-0 end-0 p-2">
+                                    {% if restaurante.promedio_calificaciones > 0 %}
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="fas fa-star me-1"></i>{{ restaurante.promedio_calificaciones }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">{{ restaurante.nombre }}</h5>
+                                
+                                <!-- INFORMACIÓN DEL RESTAURANTE -->
+                                <div class="restaurant-info mb-3">
+                                    {% if restaurante.direccion %}
+                                    <p class="text-muted small mb-1">
+                                        <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                                        {{ restaurante.direccion|truncatewords:8 }}
+                                    </p>
+                                    {% endif %}
+                                    
+                                    {% if restaurante.telefono %}
+                                    <p class="text-muted small mb-2">
+                                        <i class="fas fa-phone text-success me-1"></i>
+                                        {{ restaurante.telefono }}
+                                    </p>
+                                    {% endif %}
+                                    
+                                    <!-- CALIFICACIÓN -->
+                                    {% if restaurante.total_resenas > 0 %}
+                                    <div class="rating-section">
+                                        <div class="d-flex align-items-center">
+                                            <div class="star-rating me-2">
+                                                {% for i in "12345" %}
+                                                    {% if forloop.counter <= restaurante.promedio_calificaciones %}
+                                                        <i class="fas fa-star text-warning small"></i>
+                                                    {% else %}
+                                                        <i class="far fa-star text-warning small"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                            <small class="text-muted">
+                                                {{ estadisticas_resenas.total }} reseña{{ restaurante.total_resenas|pluralize }})
+                                            </small>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <small class="text-muted">Sin reseñas aún</small>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- BOTONES DE ACCIÓN -->
+                                <div class="mt-auto">
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'menu_publico' restaurante.id %}" 
+                                           class="btn btn-primary btn-sm">
+                                            <i class="fas fa-utensils me-2"></i>Ver Menú
+                                        </a>
+                                        <a href="{% url 'detalle_restaurante' restaurante.id %}" 
+                                           class="btn btn-outline-secondary btn-sm">
+                                            <i class="fas fa-info-circle me-2"></i>Más Info
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <!-- ESTADO VACÍO -->
+                <div class="text-center py-5 my-5">
+                    <div class="empty-icon mb-4">
+                        <i class="fas fa-search fa-5x text-muted"></i>
+                    </div>
+                    <h3 class="text-muted mb-3">No se encontraron restaurantes</h3>
+                    <p class="text-muted lead mb-4">
+                        {% if query or categoria_filter %}
+                            No hay restaurantes que coincidan con tu búsqueda.
+                            <br>Intenta con otros términos o <a href="{% url 'explorar_restaurantes' %}">muestra todos los restaurantes</a>.
+                        {% else %}
+                            No hay restaurantes disponibles en este momento.
+                            <br>Vuelve pronto para descubrir nuevos restaurantes.
+                        {% endif %}
+                    </p>
+                    <a href="{% url 'explorar_restaurantes' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-undo me-2"></i>Ver Todos los Restaurantes
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- CATEGORÍAS DISPONIBLES -->
+ <!-- CATEGORÍAS DISPONIBLES -->
+{% if categorias %}
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-tags me-2"></i>Categorías Populares
+                </h5>
+                <div class="d-flex flex-wrap gap-2">
+                    {% for categoria in categorias %}
+                    <!-- CORRECCIÓN: Verificar que la categoría tenga ID -->
+                    {% if categoria.id %}
+                    <a href="{% url 'platos_por_categoria' categoria.id %}" 
+                       class="btn btn-outline-primary btn-sm">
+                        <span class="emoji me-1">{{ categoria.emoji|default:"🍽️" }}</span>
+                        {{ categoria.nombre }}
+                    </a>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.restaurant-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.restaurant-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.restaurant-image-container {
+    overflow: hidden;
+}
+
+.restaurant-image {
+    transition: transform 0.3s ease;
+}
+
+.restaurant-card:hover .restaurant-image {
+    transform: scale(1.05);
+}
+
+.restaurant-placeholder {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.star-rating {
+    font-size: 0.8rem;
+}
+
+.search-form .input-group {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.shadow-hover {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.emoji {
+    font-size: 1.1em;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("🏪 Página de exploración cargada");
+    
+    // Animación suave para las tarjetas
+    const restaurantCards = document.querySelectorAll('.restaurant-card');
+    restaurantCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

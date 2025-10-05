@@ -1,0 +1,284 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+
+{% block title %}Pedido #{{ pedido.id }} - Detalle{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- HEADER DEL PEDIDO -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">
+                    <i class="fas fa-receipt me-2"></i>Pedido #{{ pedido.id }}
+                </h4>
+                <span class="badge bg-{% if pedido.estado == 'ENTREGADO' %}success{% elif pedido.estado == 'CANCELADO' %}danger{% else %}warning{% endif %} fs-6">
+                    {{ pedido.get_estado_display }}
+                </span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-muted">Información del Pedido</h6>
+                    <p class="mb-1"><strong>Fecha:</strong> {{ pedido.fecha_creacion|date:"d M Y H:i" }}</p>
+                    <p class="mb-1"><strong>Restaurante:</strong> {{ pedido.restaurante.nombre }}</p>
+                    <p class="mb-1"><strong>Método de Pago:</strong> {{ pedido.get_metodo_pago_display }}</p>
+                    <p class="mb-0"><strong>Total:</strong> ${{ pedido.total }}</p>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-muted">Información de Entrega</h6>
+                    <p class="mb-1"><strong>Dirección:</strong> {{ pedido.direccion_entrega }}</p>
+                    <p class="mb-1"><strong>Teléfono:</strong> {{ pedido.telefono_contacto }}</p>
+                    {% if pedido.notas %}
+                    <p class="mb-0"><strong>Notas:</strong> {{ pedido.notas }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- DETALLE DE ITEMS -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>Productos del Pedido
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for item in items %}
+                    <div class="order-item border-bottom pb-3 mb-3">
+                        <div class="row align-items-center">
+                            <div class="col-2">
+                                {% if item.plato.imagen %}
+                                <img src="{{ item.plato.imagen.url }}" alt="{{ item.plato.nombre }}" 
+                                     class="img-fluid rounded" style="max-height: 60px;">
+                                {% else %}
+                                <div class="bg-secondary rounded d-flex align-items-center justify-content-center" 
+                                     style="width: 60px; height: 60px;">
+                                    <i class="fas fa-utensils text-white"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-6">
+                                <h6 class="mb-1">{{ item.plato.nombre }}</h6>
+                                <p class="text-muted mb-0 small">${{ item.precio_unitario }} c/u</p>
+                                {% if item.notas %}
+                                <p class="text-info small mb-0"><em>{{ item.notas }}</em></p>
+                                {% endif %}
+                            </div>
+                            <div class="col-2 text-center">
+                                <span class="badge bg-primary">x{{ item.cantidad }}</span>
+                            </div>
+                            <div class="col-2 text-end">
+                                <strong>${{ item.subtotal }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <!-- TOTALES -->
+                    <div class="order-totals mt-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <span>${{ pedido.total }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Envío:</span>
+                            <span>$0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Impuestos:</span>
+                            <span>${{ pedido.total|floatformat:2 }}</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <strong>Total:</strong>
+                            <strong class="h5 text-success">${{ pedido.total }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COMPROBANTE DE PAGO -->
+            {% if pedido.comprobante_pago %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-file-invoice me-2"></i>Comprobante de Pago
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <img src="{{ pedido.comprobante_pago.url }}" alt="Comprobante de pago" 
+                         class="img-fluid rounded shadow-sm" style="max-height: 300px;">
+                    <p class="text-muted mt-2 small">Comprobante subido el {{ pedido.fecha_creacion|date:"d M Y" }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- SECCIÓN DE RESEÑAS -->
+        <div class="col-lg-4">
+            {% if puede_calificar %}
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-star me-2"></i>Calificar Pedido
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">
+                        ¡Tu pedido ha sido entregado! Califica los productos que recibiste.
+                    </p>
+                    
+                    {% if platos_sin_calificar %}
+                        {% for plato in platos_sin_calificar %}
+                        <div class="calificar-item border-bottom pb-3 mb-3">
+                            <h6 class="mb-2">{{ plato.nombre }}</h6>
+                            <form method="post" action="{% url 'agregar_resena' pedido.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="plato_id" value="{{ plato.id }}">
+                                
+                                <div class="mb-2">
+                                    <label class="form-label small">Calificación:</label>
+                                    <select name="calificacion" class="form-select form-select-sm" required>
+                                        <option value="">Selecciona...</option>
+                                        <option value="5">⭐⭐⭐⭐⭐ Excelente</option>
+                                        <option value="4">⭐⭐⭐⭐ Muy Bueno</option>
+                                        <option value="3">⭐⭐⭐ Bueno</option>
+                                        <option value="2">⭐⭐ Regular</option>
+                                        <option value="1">⭐ Malo</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <label class="form-label small">Comentario:</label>
+                                    <textarea name="comentario" class="form-control form-control-sm" 
+                                              rows="2" placeholder="Comparte tu experiencia..."></textarea>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-success btn-sm w-100">
+                                    <i class="fas fa-paper-plane me-1"></i>Enviar Reseña
+                                </button>
+                            </form>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-check-circle text-success fa-2x mb-3"></i>
+                            <p class="text-muted mb-0">¡Ya has calificado todos los productos de este pedido!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ACCIONES -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cog me-2"></i>Acciones
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'historial_pedidos' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-history me-2"></i>Ver Historial
+                        </a>
+                        <a href="{% url 'menu_publico' pedido.restaurante.id %}" class="btn btn-outline-success">
+                            <i class="fas fa-utensils me-2"></i>Ordenar de Nuevo
+                        </a>
+                        <a href="{% url 'explorar_restaurantes' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-store me-2"></i>Explorar Restaurantes
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ESTADO DEL PEDIDO -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-truck me-2"></i>Seguimiento del Pedido
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        {% with estados=pedido.ESTADOS_PEDIDO %}
+                        {% for estado_val, estado_nombre in estados %}
+                        <div class="timeline-item {% if pedido.estado == estado_val %}active{% endif %}">
+                            <div class="timeline-marker">
+                                {% if pedido.estado == estado_val %}
+                                <i class="fas fa-circle text-primary"></i>
+                                {% else %}
+                                <i class="far fa-circle text-muted"></i>
+                                {% endif %}
+                            </div>
+                            <div class="timeline-content">
+                                <h6 class="mb-0">{{ estado_nombre }}</h6>
+                                {% if pedido.estado == estado_val %}
+                                <small class="text-primary">Estado actual</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% endwith %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -30px;
+    top: 0;
+}
+
+.timeline-content {
+    padding-bottom: 10px;
+}
+
+.timeline-item.active .timeline-content {
+    font-weight: bold;
+}
+
+.order-item {
+    transition: background-color 0.3s ease;
+}
+
+.order-item:hover {
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    padding: 10px;
+    margin: -10px;
+}
+
+.calificar-item {
+    transition: background-color 0.3s ease;
+}
+
+.calificar-item:hover {
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    padding: 10px;
+    margin: -10px;
+}
+</style>
+{% endblock %}

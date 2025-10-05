@@ -1,0 +1,111 @@
+<!-- templates/restaurant/editar_anuncio.html -->
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+{% csrf_token %}
+{% block title %}Editar Anuncio - {{ anuncio.titulo }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-edit me-2"></i>
+                        Editar Anuncio
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="titulo" class="form-label">Título del Anuncio *</label>
+                            <input type="text" class="form-control" id="titulo" name="titulo" 
+                                   value="{{ anuncio.titulo }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="mensaje" class="form-label">Mensaje *</label>
+                            <textarea class="form-control" id="mensaje" name="mensaje" 
+                                      rows="4" required>{{ anuncio.mensaje }}</textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="fecha_inicio" class="form-label">Fecha Inicio *</label>
+                                    <input type="datetime-local" class="form-control" id="fecha_inicio" 
+                                           name="fecha_inicio" value="{{ anuncio.fecha_inicio|date:'Y-m-d\TH:i' }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="fecha_fin" class="form-label">Fecha Fin *</label>
+                                    <input type="datetime-local" class="form-control" id="fecha_fin" 
+                                           name="fecha_fin" value="{{ anuncio.fecha_fin|date:'Y-m-d\TH:i' }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="imagen" class="form-label">Imagen del Anuncio</label>
+                            <input type="file" class="form-control" id="imagen" name="imagen" 
+                                   accept="image/*">
+                            {% if anuncio.imagen %}
+                            <div class="mt-2">
+                                <small>Imagen actual:</small><br>
+                                <img src="{{ anuncio.imagen.url }}" alt="{{ anuncio.titulo }}" 
+                                     class="img-thumbnail mt-1" style="max-height: 150px;">
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="destacado" 
+                                           name="destacado" {% if anuncio.destacado %}checked{% endif %}>
+                                    <label class="form-check-label" for="destacado">
+                                        <i class="fas fa-star text-warning me-1"></i>Anuncio Destacado
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="activo" 
+                                           name="activo" {% if anuncio.activo %}checked{% endif %}>
+                                    <label class="form-check-label" for="activo">
+                                        <i class="fas fa-power-off text-success me-1"></i>Anuncio Activo
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success flex-fill">
+                                <i class="fas fa-save me-2"></i>Guardar Cambios
+                            </button>
+                            <a href="{% url 'administrar_anuncios' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validar que fecha fin sea mayor que fecha inicio
+    const fechaInicio = document.getElementById('fecha_inicio');
+    const fechaFin = document.getElementById('fecha_fin');
+    
+    fechaInicio.addEventListener('change', function() {
+        fechaFin.min = this.value;
+    });
+});
+</script>
+{% endblock %}

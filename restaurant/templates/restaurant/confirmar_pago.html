@@ -1,0 +1,144 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+{% csrf_token %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow border-0">
+                <div class="card-header bg-info text-white py-4">
+                    <div class="text-center">
+                        <h1 class="mb-2">📤 Confirmar Pago</h1>
+                        <p class="mb-0">Sube tu comprobante de pago para continuar con la verificación</p>
+                    </div>
+                </div>
+                
+                <div class="card-body p-4">
+                    <!-- Resumen -->
+                    <div class="summary-card p-4 bg-light rounded mb-4">
+                        <h5 class="mb-3">📋 Resumen de tu Solicitud</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Restaurante:</strong> {{ solicitud.nombre_restaurante }}</p>
+                                <p><strong>Plan:</strong> {{ solicitud.plan.nombre }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Método:</strong> {{ solicitud.get_metodo_pago_display }}</p>
+                                <p><strong>Monto:</strong> <span class="text-success fw-bold">{{ solicitud.monto_pagado }} FCFA</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Formulario de Comprobante -->
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="upload-section mb-4">
+                            <h5 class="mb-3">📷 Subir Comprobante de Pago</h5>
+                            
+                            <div class="upload-area p-4 border rounded text-center">
+                                <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                <h5>Arrastra tu comprobante aquí o haz clic para seleccionar</h5>
+                                <p class="text-muted mb-3">Formatos aceptados: JPG, PNG, PDF (Máx. 5MB)</p>
+                                
+                                <input type="file" name="comprobante" class="form-control" id="comprobanteInput" 
+                                       accept=".jpg,.jpeg,.png,.pdf" required>
+                                
+                                <div class="mt-3" id="filePreview"></div>
+                            </div>
+                            
+                            <div class="form-text">
+                                <strong>¿Qué debo subir?</strong>
+                                <ul class="mb-0">
+                                    <li><strong>Transferencia:</strong> Captura de la transferencia con número de operación</li>
+                                    <li><strong>USDT:</strong> Captura del hash de transacción</li>
+                                    <li><strong>Binance:</strong> Captura del comprobante de Binance Pay</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Información Adicional -->
+                        <div class="additional-info mb-4">
+                            <label for="info_adicional" class="form-label">Información Adicional (Opcional)</label>
+                            <textarea name="info_adicional" class="form-control" rows="3" 
+                                      placeholder="Ej: Número de operación, hash de transacción, observaciones..."></textarea>
+                        </div>
+
+                        <!-- Términos -->
+                        <div class="terms-section mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                                <label class="form-check-label" for="termsCheck">
+                                    Acepto que he realizado el pago según las instrucciones y que la información proporcionada es verídica. 
+                                    Entiendo que la verificación puede tomar 24-48 horas.
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-success btn-lg px-5">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                Enviar Comprobante para Verificación
+                            </button>
+                            <a href="{% url 'proceso_pago' solicitud.id %}" class="btn btn-outline-secondary ms-2">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Volver Atrás
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('comprobanteInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const preview = document.getElementById('filePreview');
+    
+    if (file) {
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.innerHTML = `
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Archivo seleccionado: ${file.name}
+                        <div class="mt-2">
+                            <img src="${e.target.result}" class="img-thumbnail" style="max-height: 200px;">
+                        </div>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            preview.innerHTML = `
+                <div class="alert alert-info">
+                    <i class="fas fa-file me-2"></i>
+                    Archivo seleccionado: ${file.name}
+                </div>
+            `;
+        }
+    }
+});
+</script>
+
+<style>
+.upload-area {
+    border: 2px dashed #dee2e6;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.upload-area:hover {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+}
+
+.upload-area input[type="file"] {
+    cursor: pointer;
+}
+</style>
+{% endblock %}

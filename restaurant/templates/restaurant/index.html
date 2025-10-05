@@ -1,0 +1,293 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="index-hero py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold text-white mb-3">Bienvenidos a Nuestra Plataforma de Restaurantes</h1>
+                <p class="lead text-white mb-4">Descubre los mejores sabores, explora categorías únicas y disfruta de una experiencia gastronómica excepcional.</p>
+                
+                <div class="hero-badges mb-4">
+                    <span class="badge bg-warning me-2 mb-2">
+                        <i class="fas fa-utensils me-1"></i>+50 Restaurantes
+                    </span>
+                    <span class="badge bg-light text-dark me-2 mb-2">
+                        <i class="fas fa-list me-1"></i>+20 Categorías
+                    </span>
+                    <span class="badge bg-success me-2 mb-2">
+                        <i class="fas fa-star me-1"></i>Calidad Garantizada
+                    </span>
+                </div>
+                
+                <div class="hero-actions mt-4">
+                    <a href="{% url 'restaurantes' %}" class="btn btn-warning btn-lg me-3">
+                        <i class="fas fa-store me-2"></i>Ver Restaurantes
+                    </a>
+                    <a href="{% url 'categorias' %}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-list me-2"></i>Explorar Categorías
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <div class="hero-image">
+                    <i class="fas fa-utensils"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section py-5">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="section-title mb-3">¿Por Qué Elegirnos?</h2>
+                <p class="section-subtitle text-muted">Descubre las ventajas de usar nuestra plataforma</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h4>Rápido y Fácil</h4>
+                    <p class="text-muted">Encuentra y ordena de tus restaurantes favoritos en minutos con nuestra interfaz intuitiva.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4>Seguro y Confiable</h4>
+                    <p class="text-muted">Tu información y transacciones están protegidas con los más altos estándares de seguridad.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <h4>Entrega Rápida</h4>
+                    <p class="text-muted">Disfruta de entregas rápidas y eficientes directamente en tu puerta.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Categorías Destacadas -->
+<section class="categories-section py-5 bg-light">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="section-title mb-3">Categorías Destacadas</h2>
+                <p class="section-subtitle text-muted">Explora nuestra variedad de categorías culinarias</p>
+            </div>
+        </div>
+        
+        {% if categorias %}
+        <div class="row g-4">
+            {% for categoria in categorias|slice:":6" %}
+            <div class="col-lg-4 col-md-6">
+                <div class="category-card">
+                    <div class="category-image">
+                        {% if categoria.imagen %}
+                            <img src="{{ categoria.imagen.url }}" alt="{{ categoria.nombre }}" class="img-fluid">
+                        {% else %}
+                            <div class="category-placeholder">
+                                <i class="fas fa-utensils"></i>
+                            </div>
+                        {% endif %}
+                        <div class="category-overlay">
+                            <a href="{% url 'platos_por_categoria' categoria.id %}" class="btn btn-warning">Ver Platos</a>
+                        </div>
+                    </div>
+                    <div class="category-content">
+                        <h4 class="category-title">{{ categoria.nombre }}</h4>
+                        {% if categoria.descripcion %}
+                            <p class="category-description">{{ categoria.descripcion|truncatewords:15 }}</p>
+                        {% else %}
+                            <p class="category-description">Descubre los deliciosos platos de esta categoría</p>
+                        {% endif %}
+                        <div class="category-meta">
+                            <span class="badge bg-secondary">
+                                <i class="fas fa-utensil-spoon me-1"></i>
+                                {{ categoria.plato_set.count }} platos
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if categorias.count > 6 %}
+        <div class="row mt-4">
+            <div class="col-12 text-center">
+                <a href="{% url 'categorias' %}" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-list me-2"></i>Ver Todas las Categorías
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+            <h4>Próximamente más categorías</h4>
+            <p class="text-muted">Estamos trabajando para agregar nuevas categorías culinarias.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Restaurantes Destacados -->
+<section class="restaurants-section py-5">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="section-title mb-3">Restaurantes Destacados</h2>
+                <p class="section-subtitle text-muted">Descubre los restaurantes mejor calificados</p>
+            </div>
+        </div>
+        
+        {% if restaurantes %}
+        <div class="row g-4">
+            {% for restaurante in restaurantes|slice:":6" %}
+            <div class="col-lg-4 col-md-6">
+                <div class="restaurant-card">
+                    <div class="restaurant-image">
+                        {% if restaurante.imagen %}
+                            <img src="{{ restaurante.imagen.url }}" alt="{{ restaurante.nombre }}" class="img-fluid">
+                        {% else %}
+                            <div class="restaurant-placeholder">
+                                <i class="fas fa-store"></i>
+                            </div>
+                        {% endif %}
+                        {% if restaurante.es_destacado %}
+                        <span class="featured-badge">
+                            <i class="fas fa-star me-1"></i>Destacado
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="restaurant-content">
+                        <h4 class="restaurant-name">{{ restaurante.nombre }}</h4>
+                        <p class="restaurant-address">
+                            <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                            {{ restaurante.direccion }}
+                        </p>
+                        {% if restaurante.telefono %}
+                        <p class="restaurant-phone">
+                            <i class="fas fa-phone text-success me-2"></i>
+                            {{ restaurante.telefono }}
+                        </p>
+                        {% endif %}
+                        <div class="restaurant-rating mb-3">
+                            <span class="stars">
+                                {% for i in "12345" %}
+                                    <i class="fas fa-star{% if forloop.counter <= restaurante.calificacion|default:5 %}{% else %}-o{% endif %} text-warning"></i>
+                                {% endfor %}
+                            </span>
+                            <span class="rating-text">({{ restaurante.calificacion|default:"5" }}/5)</span>
+                        </div>
+                        <div class="restaurant-actions">
+                            <a href="{% url 'menu_restaurante' restaurante.id %}" class="btn btn-primary w-100">
+                                <i class="fas fa-utensils me-2"></i>Ver Menú
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if restaurantes.count > 6 %}
+        <div class="row mt-4">
+            <div class="col-12 text-center">
+                <a href="{% url 'restaurantes' %}" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-store me-2"></i>Ver Todos los Restaurantes
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-store-slash fa-3x text-muted mb-3"></i>
+            <h4>Próximamente más restaurantes</h4>
+            <p class="text-muted">Estamos trabajando para agregar los mejores restaurantes a nuestra plataforma.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section py-5 bg-dark text-white">
+    <div class="container">
+        <div class="row text-center g-4">
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <h3 class="stat-number">{{ total_restaurantes|default:"50" }}+</h3>
+                    <p class="stat-label">Restaurantes</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <h3 class="stat-number">{{ total_categorias|default:"20" }}+</h3>
+                    <p class="stat-label">Categorías</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <h3 class="stat-number">1000+</h3>
+                    <p class="stat-label">Clientes Satisfechos</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <h3 class="stat-number">24/7</h3>
+                    <p class="stat-label">Servicio Disponible</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="mb-4">¿Listo para Comenzar?</h2>
+                <p class="lead mb-4">
+                    Únete a nuestra comunidad y descubre una nueva forma de disfrutar la gastronomía.
+                </p>
+                <div class="cta-actions">
+                    {% if not user.is_authenticated %}
+                    <a href="{% url 'register' %}" class="btn btn-warning btn-lg me-3">
+                        <i class="fas fa-user-plus me-2"></i>Registrarse
+                    </a>
+                    <a href="{% url 'login' %}" class="btn btn-outline-dark btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+                    </a>
+                    {% else %}
+                    <a href="{% url 'restaurantes' %}" class="btn btn-warning btn-lg me-3">
+                        <i class="fas fa-utensils me-2"></i>Ordenar Ahora
+                    </a>
+                    <a href="{% url 'categorias' %}" class="btn btn-outline-dark btn-lg">
+                        <i class="fas fa-list me-2"></i>Explorar Menús
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

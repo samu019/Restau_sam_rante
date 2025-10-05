@@ -1,0 +1,82 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+{% csrf_token %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-store me-2"></i>Crear Mi Restaurante</h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        Configura tu restaurante para comenzar a usar todas las funcionalidades de la plataforma.
+                    </p>
+
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Nombre del Restaurante *</label>
+                                    {{ form.nombre }}
+                                    {% if form.nombre.errors %}
+                                    <div class="text-danger small">{{ form.nombre.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Teléfono</label>
+                                    {{ form.telefono }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Dirección *</label>
+                            {{ form.direccion }}
+                            {% if form.direccion.errors %}
+                            <div class="text-danger small">{{ form.direccion.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Correo Electrónico</label>
+                            {{ form.email }}
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Logo del Restaurante</label>
+                            {{ form.logo }}
+                            <div class="form-text">
+                                Sube una imagen cuadrada para mejor visualización (recomendado: 300x300px)
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle me-2"></i>Información Importante</h6>
+                            <ul class="mb-0">
+                                <li>Podrás modificar esta información después en la configuración</li>
+                                <li>El nombre y dirección son requeridos para crear el restaurante</li>
+                                <li>Después de crear el restaurante, podrás agregar categorías y platos</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'dashboard' %}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-arrow-left me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Crear Restaurante
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

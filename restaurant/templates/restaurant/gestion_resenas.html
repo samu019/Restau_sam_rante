@@ -1,0 +1,346 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+
+{% block title %}Gestión de Reseñas - {{ restaurante.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- HEADER -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="display-6 fw-bold mb-2">
+                                <i class="fas fa-star me-3"></i>Gestión de Reseñas
+                            </h1>
+                            <p class="lead mb-0">Administra las reseñas y calificaciones de tus clientes</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="display-4">
+                                {{ stats.promedio|default:"0.0" }} <i class="fas fa-star text-dark"></i>
+                            </div>
+                            <p class="mb-0">Promedio de {{ stats.total }} reseñas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ESTADÍSTICAS -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <h3 class="text-primary">{{ stats.total }}</h3>
+                    <p class="text-muted mb-0">Total</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <h3 class="text-success">{{ stats.por_calificacion.5|default:0 }}</h3>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <h3 class="text-info">{{ stats.por_calificacion.4|default:0 }}</h3>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <h3 class="text-warning">{{ stats.por_calificacion.3|default:0 }}</h3>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <h3 class="text-orange">{{ stats.por_calificacion.2|default:0 }}</h3>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <h3 class="text-danger">{{ stats.por_calificacion.1|default:0 }}</h3>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-star text-warning"></i>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LISTA DE RESEÑAS -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-list me-2"></i>Todas las Reseñas
+                        </h5>
+                        <div class="btn-group">
+                            <a href="{% url 'dashboard_mejorado' %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-arrow-left me-1"></i>Volver al Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if resenas %}
+                        {% for resena in resenas %}
+                        <div class="review-card card border mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <!-- INFORMACIÓN DE LA RESEÑA -->
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="user-avatar me-3">
+                                                {% if resena.usuario.perfil.avatar %}
+                                                <img src="{{ resena.usuario.perfil.avatar.url }}" 
+                                                     alt="{{ resena.usuario.username }}"
+                                                     class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
+                                                {% else %}
+                                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" 
+                                                     style="width: 50px; height: 50px;">
+                                                    <span class="text-white fw-bold">
+                                                        {{ resena.usuario.username|first|upper }}
+                                                    </span>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1">{{ resena.usuario.username }}</h6>
+                                                <div class="star-rating mb-1">
+                                                    {% for i in "12345" %}
+                                                        {% if forloop.counter <= resena.calificacion %}
+                                                            <i class="fas fa-star text-warning"></i>
+                                                        {% else %}
+                                                            <i class="far fa-star text-warning"></i>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </div>
+                                                <small class="text-muted">
+                                                    {{ resena.fecha_creacion|date:"d M Y H:i" }}
+                                                </small>
+                                            </div>
+                                        </div>
+
+                                        <!-- COMENTARIO -->
+                                        {% if resena.comentario %}
+                                        <div class="review-comment mb-3">
+                                            <p class="mb-0">{{ resena.comentario }}</p>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- INFORMACIÓN ADICIONAL -->
+                                        <div class="review-meta">
+                                            {% if resena.plato %}
+                                            <span class="badge bg-info me-2">
+                                                <i class="fas fa-utensil-spoon me-1"></i>
+                                                {{ resena.plato.nombre }}
+                                            </span>
+                                            {% endif %}
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-receipt me-1"></i>
+                                                Pedido #{{ resena.pedido.id }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <!-- ACCIONES -->
+                                        <div class="d-flex flex-column h-100">
+                                            <div class="mt-auto">
+                                                <div class="btn-group w-100">
+                                                    {% if resena.activa %}
+                                                    <form method="post" action="{% url 'gestion_resenas' %}" class="d-inline">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="resena_id" value="{{ resena.id }}">
+                                                        <input type="hidden" name="accion" value="desactivar">
+                                                        <button type="submit" class="btn btn-outline-warning btn-sm" 
+                                                                onclick="return confirm('¿Desactivar esta reseña?')">
+                                                            <i class="fas fa-eye-slash me-1"></i>Ocultar
+                                                        </button>
+                                                    </form>
+                                                    {% else %}
+                                                    <form method="post" action="{% url 'gestion_resenas' %}" class="d-inline">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="resena_id" value="{{ resena.id }}">
+                                                        <input type="hidden" name="accion" value="activar">
+                                                        <button type="submit" class="btn btn-outline-success btn-sm">
+                                                            <i class="fas fa-eye me-1"></i>Mostrar
+                                                        </button>
+                                                    </form>
+                                                    {% endif %}
+                                                    
+                                                    <form method="post" action="{% url 'gestion_resenas' %}" class="d-inline">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="resena_id" value="{{ resena.id }}">
+                                                        <input type="hidden" name="accion" value="eliminar">
+                                                        <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                                onclick="return confirm('¿Eliminar permanentemente esta reseña?')">
+                                                            <i class="fas fa-trash me-1"></i>Eliminar
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                                
+                                                <!-- ESTADO -->
+                                                <div class="mt-2 text-center">
+                                                    {% if resena.activa %}
+                                                    <span class="badge bg-success">
+                                                        <i class="fas fa-check me-1"></i>Activa
+                                                    </span>
+                                                    {% else %}
+                                                    <span class="badge bg-secondary">
+                                                        <i class="fas fa-times me-1"></i>Oculta
+                                                    </span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <!-- ESTADO VACÍO -->
+                        <div class="text-center py-5 my-5">
+                            <div class="empty-icon mb-4">
+                                <i class="fas fa-star fa-5x text-muted"></i>
+                            </div>
+                            <h3 class="text-muted mb-3">No hay reseñas aún</h3>
+                            <p class="text-muted lead mb-4">
+                                Tus clientes aún no han dejado reseñas para tu restaurante.
+                            </p>
+                            <a href="{% url 'dashboard_mejorado' %}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>Volver al Dashboard
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGINACIÓN -->
+    {% if resenas.has_other_pages %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if resenas.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ resenas.previous_page_number }}">Anterior</a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for i in resenas.paginator.page_range %}
+                    <li class="page-item {% if resenas.number == i %}active{% endif %}">
+                        <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                    </li>
+                    {% endfor %}
+                    
+                    {% if resenas.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ resenas.next_page_number }}">Siguiente</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.bg-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%) !important;
+}
+
+.review-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.review-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.star-rating {
+    font-size: 0.9rem;
+}
+
+.user-avatar .bg-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.text-orange {
+    color: #fd7e14 !important;
+}
+
+.empty-icon {
+    opacity: 0.5;
+}
+
+.btn-group .btn {
+    border-radius: 5px !important;
+    margin: 2px;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("⭐ Gestión de reseñas cargada");
+    
+    // Animación para las tarjetas de reseñas
+    const reviewCards = document.querySelectorAll('.review-card');
+    reviewCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

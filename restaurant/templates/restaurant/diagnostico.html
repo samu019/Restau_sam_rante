@@ -1,0 +1,34 @@
+<!-- templates/restaurant/diagnostico.html -->
+{% extends 'restaurant/base_generic.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Diagnóstico de Restaurante</h2>
+    
+    <div class="card">
+        <div class="card-body">
+            <h5>Usuario: {{ user.username }}</h5>
+            <p><strong>Filter exists:</strong> {{ tiene_restaurante_filter }}</p>
+            <p><strong>Related exists:</strong> {{ tiene_restaurante_related }}</p>
+            
+            <h5>Restaurantes:</h5>
+            <ul>
+                {% for r in restaurantes %}
+                <li>{{ r.nombre }} (ID: {{ r.id }}) - Activo: {{ r.activo }}</li>
+                {% empty %}
+                <li>No hay restaurantes</li>
+                {% endfor %}
+            </ul>
+            
+            <h5>Solicitudes:</h5>
+            <ul>
+                {% for s in solicitudes %}
+                <li>{{ s.nombre_restaurante }} - Estado: {{ s.estado }}</li>
+                {% empty %}
+                <li>No hay solicitudes</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
