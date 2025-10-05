@@ -1,0 +1,304 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+{% csrf_token %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow border-0">
+                <div class="card-header bg-warning text-dark py-4">
+                    <div class="text-center">
+                        <h1 class="mb-2">💳 Proceso de Pago</h1>
+                        <p class="mb-0">Realiza el pago según las instrucciones siguientes</p>
+                    </div>
+                </div>
+                
+                <div class="card-body p-4">
+                    <!-- Resumen de la Solicitud -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="info-card p-3 bg-light rounded">
+                                <h5>📋 Resumen de tu Solicitud</h5>
+                                <p class="mb-1"><strong>Restaurante:</strong> {{ solicitud.nombre_restaurante }}</p>
+                                <p class="mb-1"><strong>Plan:</strong> {{ solicitud.plan.nombre }}</p>
+                                <p class="mb-1"><strong>Método:</strong> 
+                                    {% if solicitud.metodo_pago == 'TRANSFERENCIA' %}
+                                        Transferencia Bancaria
+                                    {% elif solicitud.metodo_pago == 'BINANCE' %}
+                                        Binance Pay
+                                    {% elif solicitud.metodo_pago == 'USDT_TRC20' %}
+                                        USDT (TRC20)
+                                    {% else %}
+                                        {{ solicitud.metodo_pago }}
+                                    {% endif %}
+                                </p>
+                                <p class="mb-0"><strong>Total a Pagar:</strong> <span class="text-success fw-bold">{{ solicitud.monto_pagado }} FCFA</span></p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-card p-3 bg-light rounded">
+                                <h5>⏰ Estado Actual</h5>
+                                <p class="mb-1"><strong>Estado:</strong> 
+                                    <span class="badge bg-warning text-dark">Pendiente de Pago</span>
+                                </p>
+                                <p class="mb-1"><strong>Solicitud ID:</strong> #{{ solicitud.id }}</p>
+                                <p class="mb-0"><strong>Fecha:</strong> {{ solicitud.fecha_solicitud|date:"d/m/Y" }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Instrucciones de Pago -->
+                    <div class="payment-instructions mb-4">
+                        <h4 class="mb-3">📝 Instrucciones para Pagar con 
+                            {% if solicitud.metodo_pago == 'TRANSFERENCIA' %}
+                                Transferencia Bancaria
+                            {% elif solicitud.metodo_pago == 'BINANCE' %}
+                                Binance Pay
+                            {% elif solicitud.metodo_pago == 'USDT_TRC20' %}
+                                USDT (TRC20)
+                            {% endif %}
+                        </h4>
+                        
+                        {% if solicitud.metodo_pago == 'TRANSFERENCIA' %}
+                        <div class="instruction-card p-4 border rounded">
+                            <h5 class="text-primary">🏦 Transferencia Bancaria</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="bank-details p-3 bg-light rounded">
+                                        <p class="mb-2"><strong>Banco:</strong> ECOBANK EG</p>
+                                        <p class="mb-2"><strong>Titular:</strong> Samuel MBA Mangue</p>
+                                        <p class="mb-2"><strong>Número de Cuenta:</strong></p>
+                                        <h4 class="text-success mb-3">39360016104</h4>
+                                        <p class="mb-2"><strong>Monto Exacto:</strong></p>
+                                        <h5 class="text-danger">{{ solicitud.monto_pagado }} FCFA</h5>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="steps p-3">
+                                        <h6>📋 Pasos a seguir:</h6>
+                                        <ol class="mb-3">
+                                            <li>Realiza la transferencia por el monto exacto indicado</li>
+                                            <li>Banco: <strong>ECOBANK EG</strong></li>
+                                            <li>Titular: <strong>Samuel MBA Mangue</strong></li>
+                                            <li>Cuenta: <strong>39360016104</strong></li>
+                                            <li>Guarda el comprobante de transferencia</li>
+                                            <li>Confirma tu pago en el siguiente paso</li>
+                                        </ol>
+                                        <div class="alert alert-info small">
+                                            <strong>💡 Nota:</strong> El proceso de verificación toma 24-48 horas después de confirmar el pago.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% elif solicitud.metodo_pago == 'USDT_TRC20' %}
+                        <div class="instruction-card p-4 border rounded">
+                            <h5 class="text-primary">₿ USDT (TRC20)</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="crypto-details p-3 bg-light rounded">
+                                        <p class="mb-2"><strong>Red:</strong> TRC20 (Tron)</p>
+                                        <p class="mb-2"><strong>Moneda:</strong> USDT</p>
+                                        <p class="mb-2"><strong>Dirección Wallet:</strong></p>
+                                        <div class="wallet-address p-2 bg-white border rounded mb-3">
+                                            <code class="text-break">TTtdsjPMYGmB1spApBR7k4HyU6UEqRq587</code>
+                                            <button class="btn btn-sm btn-outline-primary ms-2" onclick="copyToClipboard('TTtdsjPMYGmB1spApBR7k4HyU6UEqRq587')">
+                                                📋 Copiar
+                                            </button>
+                                        </div>
+                                        <p class="mb-2"><strong>Monto Aproximado:</strong></p>
+                                        <h5 class="text-danger">{{ solicitud.monto_pagado|floatformat:0 }} FCFA en USDT</h5>
+                                        <p class="small text-muted mt-2">* Calcula el equivalente en USDT al momento del pago</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="steps p-3">
+                                        <h6>📋 Pasos a seguir:</h6>
+                                        <ol class="mb-3">
+                                            <li>Envía USDT por <strong>red TRC20</strong> únicamente</li>
+                                            <li>Dirección: <strong>TTtdsjPMYGmB1spApBR7k4HyU6UEqRq587</strong></li>
+                                            <li>Envía el equivalente a <strong>{{ solicitud.monto_pagado }} FCFA</strong></li>
+                                            <li>Verifica bien la dirección antes de enviar</li>
+                                            <li>Guarda el hash/ID de la transacción</li>
+                                            <li>Confirma tu pago en el siguiente paso</li>
+                                        </ol>
+                                        <div class="alert alert-warning small">
+                                            <strong>⚠️ Importante:</strong> Solo usar red TRC20. Otras redes pueden perder los fondos.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% elif solicitud.metodo_pago == 'BINANCE' %}
+                        <div class="instruction-card p-4 border rounded">
+                            <h5 class="text-primary">💳 Binance Pay</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="binance-details p-3 bg-light rounded">
+                                        <p class="mb-2"><strong>ID de Binance:</strong></p>
+                                        <h4 class="text-success mb-3">814696947</h4>
+                                        <p class="mb-2"><strong>Nombre:</strong> Samuel MBA Mangue</p>
+                                        <p class="mb-2"><strong>Monto Exacto:</strong></p>
+                                        <h5 class="text-danger">{{ solicitud.monto_pagado }} FCFA</h5>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="steps p-3">
+                                        <h6>📋 Pasos a seguir:</h6>
+                                        <ol class="mb-3">
+                                            <li>Abre la app de Binance</li>
+                                            <li>Ve a <strong>Binance Pay</strong></li>
+                                            <li>Busca por ID: <strong>814696947</strong></li>
+                                            <li>Nombre: <strong>Samuel MBA Mangue</strong></li>
+                                            <li>Envía el monto exacto: <strong>{{ solicitud.monto_pagado }} FCFA</strong></li>
+                                            <li>Guarda el comprobante del pago</li>
+                                            <li>Confirma en el siguiente paso</li>
+                                        </ol>
+                                        <div class="alert alert-info small">
+                                            <strong>💡 Tip:</strong> Puedes usar el escáner QR si tienes nuestro contacto guardado.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Información de Contacto -->
+                    <div class="alert alert-info">
+                        <h6>📞 ¿Problemas con el pago?</h6>
+                        <p class="mb-1">Si tienes alguna dificultad o necesitas ayuda con el proceso de pago:</p>
+                        <ul class="mb-0">
+                            <li>WhatsApp: <strong>+240 ...</strong></li>
+                            <li>Email: <strong>Slimmysamuelmba@gmail.com</strong></li>
+                            <li>Horario de atención: Lunes a Viernes 9:00 - 18:00</li>
+                        </ul>
+                    </div>
+
+                    <!-- Nota Importante -->
+                    <div class="alert alert-warning">
+                        <h6>⚠️ Información Importante:</h6>
+                        <ul class="mb-0">
+                            <li>El monto debe ser <strong>exactamente {{ solicitud.monto_pagado }} FCFA</strong></li>
+                            <li>No envíes montos diferentes ni decimales</li>
+                            <li>Guarda tu comprobante, lo necesitarás para confirmar</li>
+                            <li>El restaurante se activará en 24-48 horas después de la verificación</li>
+                            <li>Recibirás un email de confirmación cuando sea aprobado</li>
+                        </ul>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="text-center mt-4">
+                        <a href="{% url 'confirmar_pago' solicitud.id %}" class="btn btn-success btn-lg px-5 py-3">
+                            <i class="fas fa-check-circle me-2"></i>
+                            ✅ He Realizado el Pago - Continuar
+                        </a>
+                        <div class="mt-3">
+                            <a href="{% url 'solicitar_restaurante' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                ↩️ Cambiar Método de Pago
+                            </a>
+                            <a href="{% url 'dashboard' %}" class="btn btn-outline-primary ms-2">
+                                🏠 Ir al Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        // Mostrar notificación más elegante
+        showNotification('✅ Dirección copiada: ' + text);
+    }, function(err) {
+        console.error('Error al copiar: ', err);
+        showNotification('❌ Error al copiar', 'error');
+    });
+}
+
+function showNotification(message, type = 'success') {
+    // Crear notificación temporal
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'error' ? 'danger' : 'success'} position-fixed`;
+    notification.style.cssText = `
+        top: 20px; 
+        right: 20px; 
+        z-index: 9999; 
+        min-width: 300px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    `;
+    notification.innerHTML = message;
+    
+    document.body.appendChild(notification);
+    
+    // Remover después de 3 segundos
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Mejorar la experiencia en móviles
+document.addEventListener('DOMContentLoaded', function() {
+    // Agregar tooltips para botones de copiar
+    const copyButtons = document.querySelectorAll('[onclick*="copyToClipboard"]');
+    copyButtons.forEach(btn => {
+        btn.setAttribute('title', 'Copiar al portapapeles');
+    });
+});
+</script>
+
+<style>
+.instruction-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-left: 4px solid #007bff !important;
+}
+
+.wallet-address {
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    background: #f8f9fa;
+}
+
+.bank-details, .crypto-details, .binance-details {
+    border-right: 2px solid #dee2e6;
+}
+
+.info-card {
+    transition: transform 0.2s;
+}
+
+.info-card:hover {
+    transform: translateY(-2px);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    font-weight: 600;
+}
+
+.btn-success:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+@media (max-width: 768px) {
+    .bank-details, .crypto-details, .binance-details {
+        border-right: none;
+        border-bottom: 2px solid #dee2e6;
+        margin-bottom: 1rem;
+    }
+    
+    .btn-lg {
+        font-size: 1rem;
+        padding: 12px 24px;
+    }
+}
+</style>
+{% endblock %}

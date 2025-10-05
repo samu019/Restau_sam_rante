@@ -1,0 +1,162 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <!-- Tarjeta de Información del Usuario -->
+            <div class="card">
+                <div class="card-body text-center">
+                    {% if perfil.avatar %}
+                    <img src="{{ perfil.avatar.url }}" alt="Avatar" class="rounded-circle mb-3" width="120" height="120">
+                    {% else %}
+                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 120px; height: 120px;">
+                        <i class="fas fa-user fa-3x text-muted"></i>
+                    </div>
+                    {% endif %}
+                    <h4>{{ user.username }}</h4>
+                    <p class="text-muted">{{ user.email|default:"Sin email" }}</p>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalAvatar">
+                            <i class="fas fa-camera me-2"></i>Cambiar Foto
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estadísticas Rápidas -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Estadísticas</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Pedidos Realizados:</span>
+                        <strong>{{ user.pedidos.count }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Restaurantes:</span>
+                        <strong>{{ user.restaurantes.count }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Miembro desde:</span>
+                        <strong>{{ user.date_joined|date:"d/m/Y" }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <!-- Formulario de Perfil -->
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-user-edit me-2"></i>Editar Perfil</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Nombre de Usuario</label>
+                                    <input type="text" class="form-control" value="{{ user.username }}" disabled>
+                                    <div class="form-text">El nombre de usuario no se puede cambiar</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Teléfono</label>
+                                    {{ form.telefono }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Dirección</label>
+                            {{ form.direccion }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch mb-3">
+                                    {{ form.tema_oscuro }}
+                                    <label class="form-check-label">Tema Oscuro</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch mb-3">
+                                    {{ form.notificaciones }}
+                                    <label class="form-check-label">Recibir Notificaciones</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Configuraciones Adicionales -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Configuraciones Adicionales</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'mis_pedidos' %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-history me-2"></i>Ver Historial de Pedidos
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-grid gap-2">
+                                {% if user.restaurantes.exists %}
+                                <a href="{% url 'dashboard' %}" class="btn btn-outline-success">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Ir al Dashboard
+                                </a>
+                                {% else %}
+                                <a href="{% url 'crear_restaurante' %}" class="btn btn-outline-success">
+                                    <i class="fas fa-store me-2"></i>Crear Mi Restaurante
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Cambiar Avatar -->
+<div class="modal fade" id="modalAvatar" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cambiar Foto de Perfil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formAvatar" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <input type="file" name="avatar" class="form-control" accept="image/*">
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Subir Foto</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

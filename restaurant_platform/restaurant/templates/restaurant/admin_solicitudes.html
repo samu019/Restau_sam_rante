@@ -1,0 +1,222 @@
+<!-- templates/restaurant/admin_solicitudes.html -->
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+
+{% block title %}Solicitudes de Restaurantes - Admin{% endblock %}
+{% csrf_token %}
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="fas fa-list-alt text-primary me-2"></i>
+            Solicitudes de Restaurantes
+        </h1>
+        <div class="d-flex gap-2">
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Volver al Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Estado</label>
+                    <select name="estado" class="form-select">
+                        <option value="">Todos los estados</option>
+                        <option value="PENDIENTE" {% if filtro_estado == 'PENDIENTE' %}selected{% endif %}>Pendiente</option>
+                        <option value="PAGADO" {% if filtro_estado == 'PAGADO' %}selected{% endif %}>Pagado</option>
+                        <option value="APROBADO" {% if filtro_estado == 'APROBADO' %}selected{% endif %}>Aprobado</option>
+                        <option value="RECHAZADO" {% if filtro_estado == 'RECHAZADO' %}selected{% endif %}>Rechazado</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Método de Pago</label>
+                    <select name="metodo_pago" class="form-select">
+                        <option value="">Todos los métodos</option>
+                        <option value="TRANSFERENCIA" {% if filtro_metodo_pago == 'TRANSFERENCIA' %}selected{% endif %}>Transferencia</option>
+                        <option value="USDT" {% if filtro_metodo_pago == 'USDT' %}selected{% endif %}>USDT</option>
+                        <option value="BINANCE" {% if filtro_metodo_pago == 'BINANCE' %}selected{% endif %}>Binance</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Buscar</label>
+                    <input type="text" name="buscar" class="form-control" placeholder="Restaurante o usuario..." value="{{ filtro_buscar }}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter me-1"></i>Filtrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ total_solicitudes }}</h4>
+                            <small>Total Solicitudes</small>
+                        </div>
+                        <i class="fas fa-list fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ pendientes }}</h4>
+                            <small>Pendientes</small>
+                        </div>
+                        <i class="fas fa-clock fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ pagadas }}</h4>
+                            <small>Pagadas</small>
+                        </div>
+                        <i class="fas fa-money-bill fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ aprobadas }}</h4>
+                            <small>Aprobadas</small>
+                        </div>
+                        <i class="fas fa-check fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ rechazadas }}</h4>
+                            <small>Rechazadas</small>
+                        </div>
+                        <i class="fas fa-times fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Solicitudes -->
+    <div class="card">
+        <div class="card-body">
+            {% if solicitudes %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Restaurante</th>
+                            <th>Usuario</th>
+                            <th>Plan</th>
+                            <th>Monto</th>
+                            <th>Método Pago</th>
+                            <th>Estado</th>
+                            <th>Fecha</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for solicitud in solicitudes %}
+                        <tr>
+                            <td><strong>#{{ solicitud.id }}</strong></td>
+                            <td>
+                                <strong>{{ solicitud.nombre_restaurante }}</strong>
+                                {% if solicitud.comprobante_pago %}
+                                <i class="fas fa-paperclip text-success ms-1" title="Comprobante subido"></i>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ solicitud.usuario.username }}
+                                <br>
+                                <small class="text-muted">{{ solicitud.usuario.email }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ solicitud.plan.nombre }}</span>
+                            </td>
+                            <td>${{ solicitud.monto_pagado }}</td>
+                            <td>
+                                <span class="badge bg-info">{{ solicitud.metodo_pago }}</span>
+                            </td>
+                            <td>
+                                {% if solicitud.estado == 'PENDIENTE' %}
+                                    <span class="badge bg-warning">Pendiente</span>
+                                {% elif solicitud.estado == 'PAGADO' %}
+                                    <span class="badge bg-info">Pagado</span>
+                                {% elif solicitud.estado == 'APROBADO' %}
+                                    <span class="badge bg-success">Aprobado</span>
+                                {% elif solicitud.estado == 'RECHAZADO' %}
+                                    <span class="badge bg-danger">Rechazado</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small>{{ solicitud.fecha_solicitud|date:"d/m/Y" }}</small>
+                                <br>
+                                <small class="text-muted">{{ solicitud.fecha_solicitud|date:"H:i" }}</small>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{% url 'detalle_solicitud' solicitud.id %}" 
+                                       class="btn btn-sm btn-outline-primary" 
+                                       title="Ver detalles">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if solicitud.estado == 'PAGADO' %}
+                                    <a href="{% url 'aprobar_solicitud' solicitud.id %}" 
+                                       class="btn btn-sm btn-outline-success"
+                                       title="Aprobar solicitud">
+                                        <i class="fas fa-check"></i>
+                                    </a>
+                                    {% endif %}
+                                    {% if solicitud.estado != 'RECHAZADO' and solicitud.estado != 'APROBADO' %}
+                                    <a href="{% url 'rechazar_solicitud' solicitud.id %}" 
+                                       class="btn btn-sm btn-outline-danger"
+                                       title="Rechazar solicitud">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">No hay solicitudes</h4>
+                <p class="text-muted">No se encontraron solicitudes con los filtros aplicados.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

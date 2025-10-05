@@ -1,0 +1,242 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+
+{% block title %}{{ restaurante.nombre }} - Detalles{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- HEADER DEL RESTAURANTE -->
+    <div class="restaurant-header card border-0 shadow-sm mb-5">
+        <div class="card-body p-5">
+            <div class="row align-items-center">
+                <div class="col-md-3 text-center">
+                    {% if restaurante.logo %}
+                    <img src="{{ restaurante.logo.url }}" alt="{{ restaurante.nombre }}" 
+                         class="img-fluid rounded-circle" style="max-height: 150px;">
+                    {% else %}
+                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto" 
+                         style="width: 150px; height: 150px;">
+                        <i class="fas fa-utensils fa-3x text-muted"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    <h1 class="display-5 fw-bold text-primary">{{ restaurante.nombre }}</h1>
+                    
+                    <!-- CALIFICACIÓN -->
+                    <div class="restaurant-rating mb-3">
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-warning text-dark fs-5 me-2">
+                                <i class="fas fa-star me-1"></i>
+                                {{ estadisticas_resenas.promedio|default:"0.0" }}
+                            </span>
+                            <span class="text-muted">
+                                {{ estadisticas_resenas.total }} reseña{{ restaurante.total_resenas|pluralize }})
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- INFORMACIÓN DE CONTACTO -->
+                    <div class="restaurant-info">
+                        {% if restaurante.direccion %}
+                        <p class="mb-2">
+                            <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                            <strong>Dirección:</strong> {{ restaurante.direccion }}
+                        </p>
+                        {% endif %}
+                        
+                        {% if restaurante.telefono %}
+                        <p class="mb-2">
+                            <i class="fas fa-phone text-success me-2"></i>
+                            <strong>Teléfono:</strong> {{ restaurante.telefono }}
+                        </p>
+                        {% endif %}
+                        
+                        {% if restaurante.email %}
+                        <p class="mb-0">
+                            <i class="fas fa-envelope text-info me-2"></i>
+                            <strong>Email:</strong> {{ restaurante.email }}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'menu_publico' restaurante.id %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-utensils me-2"></i>Ver Menú
+                        </a>
+                        <a href="{% url 'explorar_restaurantes' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Volver
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ESTADÍSTICAS DE RESEÑAS -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Estadísticas de Reseñas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <h3 class="text-primary">{{ estadisticas_resenas.promedio|default:"0.0" }}</h3>
+                            <p class="text-muted mb-0">Calificación Promedio</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h3 class="text-success">{{ estadisticas_resenas.total }}</h3>
+                            <p class="text-muted mb-0">Total de Reseñas</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h3 class="text-warning">{{ estadisticas_resenas.distribucion.5|default:0 }}</h3>
+                            <p class="text-muted mb-0">5 Estrellas</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h3 class="text-info">{{ categorias_con_platos|length }}</h3>
+                            <p class="text-muted mb-0">Categorías</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RESEÑAS RECIENTES -->
+    {% if reseñas_recientes %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-star me-2"></i>Reseñas Recientes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for reseña in reseñas_recientes %}
+                    <div class="review-item border-bottom pb-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">{{ reseña.usuario.username }}</h6>
+                                <div class="star-rating mb-2">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= reseña.calificacion %}
+                                            <i class="fas fa-star text-warning"></i>
+                                        {% else %}
+                                            <i class="far fa-star text-warning"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                {% if reseña.plato %}
+                                <p class="text-muted small mb-1">
+                                    <i class="fas fa-utensil-spoon me-1"></i>
+                                    Sobre: {{ reseña.plato.nombre }}
+                                </p>
+                                {% endif %}
+                                <p class="mb-0">{{ reseña.comentario }}</p>
+                            </div>
+                            <small class="text-muted">{{ reseña.fecha_creacion|date:"d M Y" }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- CATEGORÍAS DISPONIBLES -->
+    {% if categorias_con_platos %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>Categorías del Menú
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for item in categorias_con_platos %}
+                        <div class="col-md-4 mb-3">
+                            <div class="category-card card border-0 shadow-sm h-100">
+                                <div class="card-body text-center">
+                                    <div class="category-emoji display-6 mb-2">
+                                        {{ item.categoria.emoji }}
+                                    </div>
+                                    <h6 class="card-title">{{ item.categoria.nombre }}</h6>
+                                    <p class="text-muted small mb-2">
+                                        {{ item.platos|length }} plato{{ item.platos|length|pluralize }}
+                                    </p>
+                                    <a href="{% url 'menu_publico' restaurante.id %}#categoria-{{ item.categoria.id }}" 
+                                       class="btn btn-outline-primary btn-sm">
+                                        Ver Platos
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- SI NO HAY RESEÑAS -->
+    {% if not reseñas_recientes %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card text-center py-5">
+                <div class="card-body">
+                    <i class="fas fa-star fa-4x text-muted mb-4"></i>
+                    <h4 class="text-muted mb-3">Aún no hay reseñas</h4>
+                    <p class="text-muted mb-4">
+                        Sé el primero en compartir tu experiencia con este restaurante.
+                    </p>
+                    <a href="{% url 'menu_publico' restaurante.id %}" class="btn btn-primary">
+                        <i class="fas fa-utensils me-2"></i>Ordenar y Calificar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.restaurant-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.category-card {
+    transition: transform 0.3s ease;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+}
+
+.star-rating {
+    font-size: 0.9rem;
+}
+
+.review-item {
+    transition: background-color 0.3s ease;
+}
+
+.review-item:hover {
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    padding: 10px;
+    margin: -10px;
+}
+</style>
+{% endblock %}

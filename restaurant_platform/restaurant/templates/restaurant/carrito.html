@@ -1,0 +1,466 @@
+<!-- templates/restaurant/carrito.html -->
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+{% csrf_token %}
+{% block title %}Carrito - {{ restaurante.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-shopping-cart text-primary me-2"></i>
+                    Mi Carrito
+                </h1>
+                <a href="{% url 'menu_publico' restaurante.id %}" class="btn btn-outline-primary">
+                    <i class="fas fa-utensils me-2"></i>Seguir Comprando
+                </a>
+            </div>
+            <p class="text-muted mb-0">Restaurante: <strong>{{ restaurante.nombre }}</strong></p>
+        </div>
+    </div>
+
+    {% if carrito.items %}
+    <div class="row">
+        <!-- Items del Carrito -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>Productos en el Carrito
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for key, item in carrito.items.items %}
+                    <div class="cart-item border-bottom pb-3 mb-3" id="cart-item-{{ item.plato_id }}">
+                        <div class="row align-items-center">
+                            <!-- Imagen -->
+                            <div class="col-2">
+                                {% if item.imagen %}
+                                <img src="{{ item.imagen }}" alt="{{ item.nombre }}" 
+                                     class="img-fluid rounded" style="max-height: 60px;">
+                                {% else %}
+                                <div class="bg-secondary rounded d-flex align-items-center justify-content-center" 
+                                     style="width: 60px; height: 60px;">
+                                    <i class="fas fa-utensils text-white"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Información del Producto -->
+                            <div class="col-5">
+                                <h6 class="mb-1">{{ item.nombre }}</h6>
+                                <p class="text-muted mb-0 small">${{ item.precio }} c/u</p>
+                            </div>
+                            
+                            <!-- Cantidad -->
+                            <div class="col-3">
+                                <div class="input-group input-group-sm">
+                                    <button class="btn btn-outline-secondary decrease-quantity" 
+                                            type="button" 
+                                            data-plato-id="{{ item.plato_id }}"
+                                            data-restaurante-id="{{ restaurante.id }}">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <input type="number" 
+                                           class="form-control text-center quantity-input"
+                                           value="{{ item.cantidad }}" 
+                                           min="1" 
+                                           max="99"
+                                           data-plato-id="{{ item.plato_id }}"
+                                           data-restaurante-id="{{ restaurante.id }}">
+                                    <button class="btn btn-outline-secondary increase-quantity" 
+                                            type="button"
+                                            data-plato-id="{{ item.plato_id }}"
+                                            data-restaurante-id="{{ restaurante.id }}">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Subtotal y Eliminar -->
+                            <div class="col-2 text-end">
+                                <h6 class="text-primary mb-1">${{ item.precio }}</h6>
+                                <small class="text-muted">x{{ item.cantidad }}</small>
+                                <br>
+                                {% widthratio item.precio 1 item.cantidad as subtotal %}
+                                <strong class="text-success">${{ subtotal }}</strong>
+                                <br>
+                                <button class="btn btn-sm btn-outline-danger mt-1 remove-item"
+                                        onclick="eliminarItemDelCarrito('{{ item.plato_id }}', '{{ restaurante.id }}')"
+                                        title="Eliminar del carrito">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Resumen del Pedido -->
+        <div class="col-lg-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-receipt me-2"></i>Resumen del Pedido
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Subtotal -->
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <span id="subtotal">$0.00</span>
+                    </div>
+                    
+                    <!-- Envío -->
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Envío:</span>
+                        <span id="envio">$0.00</span>
+                    </div>
+                    
+                    <!-- Impuestos -->
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Impuestos (10%):</span>
+                        <span id="impuestos">$0.00</span>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Total -->
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Total:</strong>
+                        <strong class="h5 text-success" id="total">$0.00</strong>
+                    </div>
+                    
+                    <!-- Botón de Pedido -->
+                    <div class="d-grid">
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'realizar_pedido' restaurante.id %}" 
+                           class="btn btn-success btn-lg">
+                            <i class="fas fa-check me-2"></i>Realizar Pedido
+                        </a>
+                        {% else %}
+                        <a href="{% url 'login' %}?next={% url 'ver_carrito' restaurante.id %}" 
+                           class="btn btn-warning btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión para Pedir
+                        </a>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Información Adicional -->
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            El pedido será enviado directamente al restaurante.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Carrito Vacío -->
+    {% else %}
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="card">
+                <div class="card-body py-5">
+                    <i class="fas fa-shopping-cart fa-4x text-muted mb-4"></i>
+                    <h3 class="text-muted">Tu carrito está vacío</h3>
+                    <p class="text-muted mb-4">
+                        Agrega algunos productos deliciosos a tu carrito para continuar.
+                    </p>
+                    <a href="{% url 'menu_publico' restaurante.id %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-utensils me-2"></i>Ver Menú
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Función para mostrar mensajes
+function showToast(message, type) {
+    var toast = document.createElement('div');
+    toast.className = 'alert alert-' + type + ' alert-dismissible fade show position-fixed';
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    
+    var icon = 'ℹ️';
+    if (type === 'success') icon = '✅';
+    else if (type === 'error') icon = '❌';
+    else if (type === 'warning') icon = '⚠️';
+    
+    toast.innerHTML = 
+        '<div class="d-flex align-items-center">' +
+            '<span class="me-2">' + icon + '</span>' +
+            '<span class="flex-grow-1">' + message + '</span>' +
+            '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+        '</div>';
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(function() {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 5000);
+}
+
+// Función para calcular totales
+function calcularTotales() {
+    var subtotal = 0;
+    var items = document.querySelectorAll('.cart-item');
+    
+    for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        var precioElement = item.querySelector('.text-primary');
+        var cantidadInput = item.querySelector('.quantity-input');
+        var subtotalElement = item.querySelector('.text-success');
+        
+        if (precioElement && cantidadInput && subtotalElement) {
+            var precioText = precioElement.textContent;
+            var precio = parseFloat(precioText.replace('$', '').replace(',', ''));
+            var cantidad = parseInt(cantidadInput.value);
+            var itemSubtotal = precio * cantidad;
+            subtotal += itemSubtotal;
+            
+            subtotalElement.textContent = '$' + itemSubtotal.toFixed(2);
+        }
+    }
+    
+    var impuestos = subtotal * 0.10;
+    var total = subtotal + impuestos;
+    
+    document.getElementById('subtotal').textContent = '$' + subtotal.toFixed(2);
+    document.getElementById('impuestos').textContent = '$' + impuestos.toFixed(2);
+    document.getElementById('total').textContent = '$' + total.toFixed(2);
+}
+
+// FUNCIÓN PARA ELIMINAR ITEM DEL CARRITO - CORREGIDA
+function eliminarItemDelCarrito(platoId, restauranteId) {
+    console.log('🗑️ Intentando eliminar plato: ' + platoId);
+    console.log('🏪 Restaurante ID: ' + restauranteId);
+    
+    if (!confirm('¿Estás seguro de que quieres eliminar este producto del carrito?')) {
+        return;
+    }
+    
+    var formData = new FormData();
+    formData.append('plato_id', platoId);
+    formData.append('cantidad', '0'); // Cantidad 0 para eliminar
+    
+    var url = '/carrito/' + restauranteId + '/actualizar/';
+    console.log('🌐 Enviando petición a: ' + url);
+    
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', url, true);
+    xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    
+    xhr.onload = function() {
+        console.log('📨 Respuesta recibida - Status: ' + xhr.status);
+        
+        if (xhr.status === 200) {
+            try {
+                var data = JSON.parse(xhr.responseText);
+                console.log('📦 Datos de respuesta:', data);
+                
+                if (data.success) {
+                    // Eliminar el elemento del DOM
+                    var itemElement = document.getElementById('cart-item-' + platoId);
+                    if (itemElement) {
+                        // Animación de fade out
+                        itemElement.style.transition = 'all 0.3s ease';
+                        itemElement.style.opacity = '0';
+                        itemElement.style.transform = 'translateX(-100px)';
+                        
+                        setTimeout(function() {
+                            itemElement.remove();
+                            showToast('✅ Producto eliminado del carrito', 'success');
+                            calcularTotales();
+                            
+                            // Si no quedan items, recargar la página
+                            if (document.querySelectorAll('.cart-item').length === 0) {
+                                setTimeout(function() {
+                                    location.reload();
+                                }, 1500);
+                            }
+                        }, 300);
+                    }
+                } else {
+                    showToast('❌ Error: ' + data.message, 'error');
+                }
+            } catch (e) {
+                console.error('❌ Error parsing JSON:', e);
+                showToast('❌ Error en la respuesta del servidor', 'error');
+            }
+        } else {
+            console.error('❌ Error HTTP: ' + xhr.status);
+            showToast('❌ Error de conexión: ' + xhr.status, 'error');
+        }
+    };
+    
+    xhr.onerror = function() {
+        console.error('❌ Error de red en XHR');
+        showToast('❌ Error de conexión de red', 'error');
+    };
+    
+    xhr.send(formData);
+}
+
+// Función para actualizar cantidad
+function actualizarCantidad(platoId, restauranteId, nuevaCantidad) {
+    console.log('🔄 Actualizando cantidad: Plato ' + platoId + ' -> ' + nuevaCantidad);
+    
+    var formData = new FormData();
+    formData.append('plato_id', platoId);
+    formData.append('cantidad', nuevaCantidad);
+    
+    var url = '/carrito/' + restauranteId + '/actualizar/';
+    
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', url, true);
+    xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    
+    xhr.onload = function() {
+        console.log('📨 Respuesta recibida - Status: ' + xhr.status);
+        
+        if (xhr.status === 200) {
+            try {
+                var data = JSON.parse(xhr.responseText);
+                
+                if (data.success) {
+                    calcularTotales();
+                    showToast('Cantidad actualizada', 'success');
+                    
+                    // Si la cantidad es 0, eliminar el item
+                    if (nuevaCantidad <= 0) {
+                        var itemElement = document.getElementById('cart-item-' + platoId);
+                        if (itemElement) {
+                            itemElement.remove();
+                            calcularTotales();
+                            
+                            if (document.querySelectorAll('.cart-item').length === 0) {
+                                setTimeout(function() {
+                                    location.reload();
+                                }, 1000);
+                            }
+                        }
+                    }
+                } else {
+                    showToast('Error: ' + data.message, 'error');
+                    location.reload();
+                }
+            } catch (e) {
+                console.error('❌ Error parsing JSON:', e);
+                showToast('Error en la respuesta del servidor', 'error');
+                location.reload();
+            }
+        } else {
+            console.error('❌ Error HTTP: ' + xhr.status);
+            showToast('Error de conexión: ' + xhr.status, 'error');
+            location.reload();
+        }
+    };
+    
+    xhr.onerror = function() {
+        console.error('❌ Error de red en XHR');
+        showToast('Error de conexión de red', 'error');
+        location.reload();
+    };
+    
+    xhr.send(formData);
+}
+
+// Configurar eventos
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🛒 Carrito cargado');
+    console.log('🏪 Restaurante ID: {{ restaurante.id }}');
+    
+    calcularTotales();
+    
+    // Botones de aumentar cantidad
+    var increaseButtons = document.querySelectorAll('.increase-quantity');
+    for (var i = 0; i < increaseButtons.length; i++) {
+        increaseButtons[i].addEventListener('click', function() {
+            var platoId = this.getAttribute('data-plato-id');
+            var restauranteId = this.getAttribute('data-restaurante-id');
+            var input = this.parentElement.querySelector('.quantity-input');
+            
+            if (input) {
+                var cantidad = parseInt(input.value);
+                if (cantidad < 99) {
+                    input.value = cantidad + 1;
+                    actualizarCantidad(platoId, restauranteId, cantidad + 1);
+                } else {
+                    showToast('La cantidad máxima es 99', 'warning');
+                }
+            }
+        });
+    }
+    
+    // Botones de disminuir cantidad
+    var decreaseButtons = document.querySelectorAll('.decrease-quantity');
+    for (var i = 0; i < decreaseButtons.length; i++) {
+        decreaseButtons[i].addEventListener('click', function() {
+            var platoId = this.getAttribute('data-plato-id');
+            var restauranteId = this.getAttribute('data-restaurante-id');
+            var input = this.parentElement.querySelector('.quantity-input');
+            
+            if (input) {
+                var cantidad = parseInt(input.value);
+                if (cantidad > 1) {
+                    input.value = cantidad - 1;
+                    actualizarCantidad(platoId, restauranteId, cantidad - 1);
+                } else {
+                    // Si la cantidad es 1, usar la función eliminar
+                    eliminarItemDelCarrito(platoId, restauranteId);
+                }
+            }
+        });
+    }
+    
+    // Input de cantidad manual
+    var quantityInputs = document.querySelectorAll('.quantity-input');
+    for (var i = 0; i < quantityInputs.length; i++) {
+        quantityInputs[i].addEventListener('change', function() {
+            var platoId = this.getAttribute('data-plato-id');
+            var restauranteId = this.getAttribute('data-restaurante-id');
+            var cantidad = parseInt(this.value);
+            
+            if (isNaN(cantidad) || cantidad < 1) {
+                this.value = 1;
+                cantidad = 1;
+            }
+            
+            if (cantidad > 99) {
+                this.value = 99;
+                cantidad = 99;
+                showToast('La cantidad máxima es 99', 'warning');
+            }
+            
+            actualizarCantidad(platoId, restauranteId, cantidad);
+        });
+    }
+    
+    // También agregar event listeners a los botones eliminar por si acaso
+    var removeButtons = document.querySelectorAll('.remove-item');
+    for (var i = 0; i < removeButtons.length; i++) {
+        removeButtons[i].addEventListener('click', function() {
+            var platoId = this.getAttribute('data-plato-id') || this.getAttribute('onclick').match(/'([^']+)'/)[1];
+            var restauranteId = this.getAttribute('data-restaurante-id') || this.getAttribute('onclick').match(/'([^']+)'/)[3];
+            eliminarItemDelCarrito(platoId, restauranteId);
+        });
+    }
+});
+</script>
+{% endblock %}

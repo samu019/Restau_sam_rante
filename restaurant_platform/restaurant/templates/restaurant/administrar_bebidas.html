@@ -1,0 +1,358 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+{% csrf_token %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-wine-bottle me-2"></i>Gestionar Bebidas</h1>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalBebida">
+                    <i class="fas fa-plus me-2"></i>Nueva Bebida
+                </button>
+            </div>
+
+            <!-- Mensajes -->
+            {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Estadísticas -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <h3 class="mb-0">{{ stats.total_bebidas }}</h3>
+                            <small>Total Bebidas</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <h3 class="mb-0">{{ stats.con_stock }}</h3>
+                            <small>Con Stock</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body text-center">
+                            <h3 class="mb-0">{{ stats.sin_stock }}</h3>
+                            <small>Sin Stock</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <h3 class="mb-0">{{ stats.populares }}</h3>
+                            <small>Populares</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Verificar si hay categorías -->
+            {% if not categorias %}
+            <div class="alert alert-warning">
+                <h5>⚠️ No hay categorías disponibles</h5>
+                <p>Para crear bebidas, primero necesitas crear categorías.</p>
+                <a href="{% url 'administrar_categorias' %}" class="btn btn-primary">
+                    <i class="fas fa-list me-2"></i>Crear Categorías
+                </a>
+            </div>
+            {% else %}
+            <!-- Filtros -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <select class="form-select" id="filtroCategoria">
+                                <option value="">Todas las categorías</option>
+                                {% for categoria in categorias %}
+                                <option value="{{ categoria.id }}">{{ categoria.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" id="filtroTipo">
+                                <option value="">Todos los tipos</option>
+                                {% for valor, etiqueta in tipos_bebida %}
+                                <option value="{{ valor }}">{{ etiqueta }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" placeholder="Buscar bebida..." id="buscarBebida">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de Bebidas -->
+            <div class="row" id="listaBebidas">
+                {% for bebida in bebidas %}
+                <div class="col-md-6 col-lg-4 mb-4 bebida-item" 
+                     data-categoria="{{ bebida.categoria.id }}" 
+                     data-tipo="{{ bebida.tipo_bebida }}"
+                     data-estado="{% if bebida.activo %}activo{% else %}inactivo{% endif %}">
+                    <div class="card h-100">
+                        {% if bebida.imagen %}
+                        <img src="{{ bebida.imagen.url }}" class="card-img-top" alt="{{ bebida.nombre }}" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="fas fa-wine-bottle fa-3x text-muted"></i>
+                        </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title">{{ bebida.nombre }}</h5>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'editar_bebida' bebida.id %}">
+                                                <i class="fas fa-edit me-2"></i>Editar
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item text-danger" href="{% url 'eliminar_bebida' bebida.id %}" onclick="return confirm('¿Estás seguro de eliminar esta bebida?')">
+                                                <i class="fas fa-trash me-2"></i>Eliminar
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <p class="card-text text-muted small">{{ bebida.descripcion|truncatewords:15 }}</p>
+                            <div class="mb-2">
+                                <span class="badge bg-primary">{{ bebida.categoria.nombre }}</span>
+                                <span class="badge bg-secondary">{{ bebida.get_tipo_bebida_display }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong class="text-success">${{ bebida.precio }}</strong>
+                                </div>
+                                <div>
+                                    {% if bebida.activo %}
+                                    <span class="badge bg-success">Activo</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Inactivo</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    {% if bebida.volumen_ml %}
+                                    <i class="fas fa-weight me-1"></i>{{ bebida.volumen_ml }}ml
+                                    {% endif %}
+                                    {% if bebida.stock_ilimitado %}
+                                    <i class="fas fa-infinity ms-2 me-1"></i>Ilimitado
+                                    {% else %}
+                                    <i class="fas fa-box ms-2 me-1"></i>
+                                    <span class="stock-display">{{ bebida.stock }}</span> disp.
+                                    {% endif %}
+                                </small>
+                            </div>
+                            
+                            <!-- Formulario para actualizar stock (solo si no es ilimitado) -->
+                            {% if not bebida.stock_ilimitado %}
+                            <div class="mt-3">
+                                <form method="POST" class="stock-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="accion" value="actualizar_stock">
+                                    <input type="hidden" name="bebida_id" value="{{ bebida.id }}">
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="nuevo_stock" class="form-control" 
+                                               value="{{ bebida.stock }}" min="0" placeholder="Stock">
+                                        <button type="submit" class="btn btn-outline-primary">
+                                            <i class="fas fa-save"></i>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <i class="fas fa-wine-bottle fa-3x text-muted mb-3"></i>
+                        <h4>No hay bebidas creadas</h4>
+                        <p class="text-muted">Comienza creando tu primera bebida usando el botón "Nueva Bebida".</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %} <!-- Cierre del if categorias -->
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Nueva Bebida -->
+<div class="modal fade" id="modalBebida" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nueva Bebida</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" enctype="multipart/form-data" action="{% url 'administrar_bebidas' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <input type="hidden" name="accion" value="crear_bebida">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Nombre *</label>
+                                <input type="text" name="nombre" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Categoría *</label>
+                                <select name="categoria" class="form-select" required>
+                                    <option value="">Seleccionar categoría...</option>
+                                    {% for categoria in categorias %}
+                                    <option value="{{ categoria.id }}">{{ categoria.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Tipo de Bebida</label>
+                                <select name="tipo_bebida" class="form-select">
+                                    {% for valor, etiqueta in tipos_bebida %}
+                                    <option value="{{ valor }}">{{ etiqueta }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Precio *</label>
+                                <input type="number" name="precio" class="form-control" step="0.01" min="0" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Descripción</label>
+                                <textarea name="descripcion" class="form-control" rows="3" placeholder="Describe la bebida..."></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Volumen (ml)</label>
+                                <input type="number" name="volumen_ml" class="form-control" min="0" placeholder="Opcional">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Stock</label>
+                                <input type="number" name="stock" class="form-control" value="0" min="0">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Imagen</label>
+                                <input type="file" name="imagen" class="form-control" accept="image/*">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="stock_ilimitado" id="stock_ilimitado">
+                                <label class="form-check-label" for="stock_ilimitado">Stock Ilimitado</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="es_popular" id="es_popular">
+                                <label class="form-check-label" for="es_popular">Marcar como Popular</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Crear Bebida</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Filtros (igual que en platos)
+    const filtroCategoria = document.getElementById('filtroCategoria');
+    const filtroTipo = document.getElementById('filtroTipo');
+    const buscarBebida = document.getElementById('buscarBebida');
+    
+    if (filtroCategoria) {
+        filtroCategoria.addEventListener('change', filtrarBebidas);
+    }
+    if (filtroTipo) {
+        filtroTipo.addEventListener('change', filtrarBebidas);
+    }
+    if (buscarBebida) {
+        buscarBebida.addEventListener('input', filtrarBebidas);
+    }
+    
+    function filtrarBebidas() {
+        const categoria = filtroCategoria ? filtroCategoria.value : '';
+        const tipo = filtroTipo ? filtroTipo.value : '';
+        const busqueda = buscarBebida ? buscarBebida.value.toLowerCase() : '';
+        
+        document.querySelectorAll('.bebida-item').forEach(item => {
+            const itemCategoria = item.getAttribute('data-categoria');
+            const itemTipo = item.getAttribute('data-tipo');
+            const itemNombre = item.querySelector('.card-title').textContent.toLowerCase();
+            
+            const coincideCategoria = !categoria || itemCategoria === categoria;
+            const coincideTipo = !tipo || itemTipo === tipo;
+            const coincideBusqueda = itemNombre.includes(busqueda);
+            
+            if (coincideCategoria && coincideTipo && coincideBusqueda) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+    
+    // Manejar formularios de stock
+    document.querySelectorAll('.stock-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const button = this.querySelector('button[type="submit"]');
+            const originalHTML = button.innerHTML;
+            
+            // Mostrar loading
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            button.disabled = true;
+            
+            fetch('', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.redirected) {
+                    window.location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al actualizar stock');
+                button.innerHTML = originalHTML;
+                button.disabled = false;
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

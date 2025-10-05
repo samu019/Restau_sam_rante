@@ -1,0 +1,129 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+{% csrf_token %}
+{% block content %}
+<!-- Hero Section -->
+<section class="category-detail-hero py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <!-- CORREGIDO: Usar 'index' que es tu URL de inicio -->
+                        <li class="breadcrumb-item"><a href="{% url 'index' %}" class="text-warning">Inicio</a></li>
+                        <li class="breadcrumb-item active text-white">{{ categoria.nombre }}</li>
+                    </ol>
+                </nav>
+                <h1 class="display-4 fw-bold text-white mb-3">{{ categoria.nombre }}</h1>
+                {% if categoria.descripcion %}
+                <p class="lead text-white mb-4">{{ categoria.descripcion }}</p>
+                {% endif %}
+                <div class="category-stats">
+                    <span class="badge bg-warning text-dark me-2">
+                        <i class="fas fa-utensils me-1"></i>
+                        {{ restaurantes.count }} restaurantes
+                    </span>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center">
+                <div class="category-detail-placeholder rounded-circle">
+                    <span style="font-size: 4rem;">{{ categoria.emoji }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Restaurantes Section -->
+<section class="restaurants-section py-5">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="section-title text-center mb-4">Restaurantes con {{ categoria.nombre }}</h2>
+            </div>
+        </div>
+
+        {% if restaurantes %}
+        <div class="row g-4">
+            {% for restaurante in restaurantes %}
+            <div class="col-lg-6">
+                <div class="restaurant-card">
+                    <div class="row g-0">
+                        <div class="col-md-4">
+                            <div class="restaurant-image">
+                                {% if restaurante.logo %}
+                                <img src="{{ restaurante.logo.url }}" alt="{{ restaurante.nombre }}" class="img-fluid">
+                                {% else %}
+                                <div class="restaurant-placeholder">
+                                    <i class="fas fa-store"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="restaurant-content">
+                                <h3 class="restaurant-name">{{ restaurante.nombre }}</h3>
+                                <p class="restaurant-address">
+                                    <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                                    {{ restaurante.direccion|default:"Dirección no disponible" }}
+                                </p>
+                                
+                                {% if restaurante.telefono %}
+                                <p class="restaurant-phone">
+                                    <i class="fas fa-phone text-success me-2"></i>
+                                    {{ restaurante.telefono }}
+                                </p>
+                                {% endif %}
+
+                                <div class="restaurant-actions mt-3">
+                                    <!-- CORREGIDO: Usar la URL 'menu_publico' que sí existe -->
+                                    <a href="{% url 'menu_publico' restaurante.id %}" class="btn btn-warning btn-sm me-2">
+                                        <i class="fas fa-eye me-1"></i>Ver Menú
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <!-- No Restaurants Available -->
+        <div class="row">
+            <div class="col-12">
+                <div class="no-restaurants text-center py-5">
+                    <i class="fas fa-store-slash fa-3x text-muted mb-3"></i>
+                    <h3>No hay restaurantes disponibles</h3>
+                    <p class="text-muted mb-4">
+                        Actualmente no hay restaurantes con esta categoría.
+                    </p>
+                    <!-- CORREGIDO: Usar 'index' -->
+                    <a href="{% url 'index' %}" class="btn btn-warning">
+                        <i class="fas fa-arrow-left me-2"></i>Volver al Inicio
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="cta-section py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="mb-4">¿No encuentras lo que buscas?</h2>
+                <p class="lead mb-4">
+                    Explora todos nuestros restaurantes disponibles.
+                </p>
+                <!-- CORREGIDO: Usar 'index' -->
+                <a href="{% url 'index' %}" class="btn btn-warning btn-lg me-3">
+                    <i class="fas fa-home me-2"></i>Volver al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

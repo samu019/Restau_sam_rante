@@ -1,0 +1,136 @@
+<!-- templates/restaurant/rechazar_solicitud.html -->
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+
+{% block title %}Rechazar Solicitud #{{ solicitud.id }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Rechazar Solicitud
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Información de la Solicitud -->
+                    <div class="alert alert-info">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Solicitud #{{ solicitud.id }}
+                        </h5>
+                        <hr>
+                        <p class="mb-1"><strong>Restaurante:</strong> {{ solicitud.nombre_restaurante }}</p>
+                        <p class="mb-1"><strong>Usuario:</strong> {{ solicitud.usuario.username }}</p>
+                        <p class="mb-1"><strong>Plan:</strong> {{ solicitud.plan.nombre }}</p>
+                        <p class="mb-0"><strong>Monto:</strong> ${{ solicitud.monto_pagado }}</p>
+                    </div>
+
+                    <!-- Advertencia -->
+                    <div class="alert alert-warning">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            ¡Atención!
+                        </h6>
+                        <p class="mb-0">
+                            Esta acción <strong>no se puede deshacer</strong>. Se enviará un email al usuario 
+                            informando el rechazo de su solicitud.
+                        </p>
+                    </div>
+
+                    <!-- Formulario de Rechazo -->
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="motivo" class="form-label fw-bold">
+                                <i class="fas fa-comment-dots me-2"></i>
+                                Motivo del Rechazo *
+                            </label>
+                            <textarea name="motivo" id="motivo" 
+                                      class="form-control" 
+                                      rows="5" 
+                                      placeholder="Describe detalladamente el motivo del rechazo. Esta información será enviada al usuario..."
+                                      required></textarea>
+                            <div class="form-text">
+                                Sé específico y claro. El usuario recibirá este mensaje.
+                            </div>
+                        </div>
+
+                        <!-- Motivos Predefinidos -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Motivos comunes (opcional):</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" 
+                                        onclick="document.getElementById('motivo').value = 'Comprobante de pago no legible o incompleto.'">
+                                    Comprobante no legible
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        onclick="document.getElementById('motivo').value = 'Información del restaurante incompleta o incorrecta.'">
+                                    Información incompleta
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        onclick="document.getElementById('motivo').value = 'El monto del pago no coincide con el plan seleccionado.'">
+                                    Monto incorrecto
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Confirmación -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="confirmacion" required>
+                                <label class="form-check-label" for="confirmacion">
+                                    Confirmo que he revisado la solicitud y deseo rechazarla
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Botones de Acción -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger flex-fill">
+                                <i class="fas fa-times me-2"></i>
+                                Rechazar Solicitud
+                            </button>
+                            <a href="{% url 'detalle_solicitud' solicitud.id %}" 
+                               class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Información Adicional -->
+            <div class="card mt-4">
+                <div class="card-header bg-light">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Recomendaciones
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Sé claro y específico en el motivo del rechazo
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Ofrece alternativas si es posible
+                        </li>
+                        <li class="mb-0">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Mantén un tono profesional y respetuoso
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

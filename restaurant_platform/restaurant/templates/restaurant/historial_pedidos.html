@@ -1,0 +1,221 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+
+{% block title %}Mi Historial de Pedidos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- HEADER -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center py-5">
+                    <h1 class="display-5 fw-bold mb-3">
+                        <i class="fas fa-history me-3"></i>Mi Historial de Pedidos
+                    </h1>
+                    <p class="lead mb-0">Revisa todos tus pedidos anteriores y su estado</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ESTADÍSTICAS -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <h3 class="text-primary">{{ total_pedidos }}</h3>
+                    <p class="text-muted mb-0">Total de Pedidos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <h3 class="text-success">{{ pedidos_entregados }}</h3>
+                    <p class="text-muted mb-0">Entregados</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <h3 class="text-warning">{{ pedidos|length|add:"-pedidos_entregados" }}</h3>
+                    <p class="text-muted mb-0">En Proceso</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body">
+                    <h3 class="text-info">${{ total_gastado|floatformat:2 }}</h3>
+                    <p class="text-muted mb-0">Total Gastado</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LISTA DE PEDIDOS -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>Tus Pedidos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if pedidos %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th># Pedido</th>
+                                        <th>Restaurante</th>
+                                        <th>Fecha</th>
+                                        <th>Estado</th>
+                                        <th>Total</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for pedido in pedidos %}
+                                    <tr>
+                                        <td>
+                                            <strong>#{{ pedido.id }}</strong>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                {% if pedido.restaurante.logo %}
+                                                <img src="{{ pedido.restaurante.logo.url }}" 
+                                                     alt="{{ pedido.restaurante.nombre }}"
+                                                     class="rounded me-2" style="width: 30px; height: 30px; object-fit: cover;">
+                                                {% endif %}
+                                                <span>{{ pedido.restaurante.nombre }}</span>
+                                            </div>
+                                        </td>
+                                        <td>{{ pedido.fecha_creacion|date:"d M Y H:i" }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if pedido.estado == 'ENTREGADO' %}success{% elif pedido.estado == 'CANCELADO' %}danger{% else %}warning{% endif %}">
+                                                {{ pedido.get_estado_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <strong>${{ pedido.total|floatformat:2 }}</strong>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'detalle_pedido_cliente' pedido.id %}" 
+                                                   class="btn btn-outline-primary" title="Ver detalle">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                {% if pedido.estado == 'ENTREGADO' %}
+                                                <a href="{% url 'detalle_pedido_cliente' pedido.id %}#resenas" 
+                                                   class="btn btn-outline-success" title="Calificar">
+                                                    <i class="fas fa-star"></i>
+                                                </a>
+                                                {% endif %}
+                                                <a href="{% url 'menu_publico' pedido.restaurante.id %}" 
+                                                   class="btn btn-outline-info" title="Ordenar de nuevo">
+                                                    <i class="fas fa-redo"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <!-- ESTADO VACÍO -->
+                        <div class="text-center py-5 my-5">
+                            <div class="empty-icon mb-4">
+                                <i class="fas fa-shopping-cart fa-5x text-muted"></i>
+                            </div>
+                            <h3 class="text-muted mb-3">Aún no tienes pedidos</h3>
+                            <p class="text-muted lead mb-4">
+                                ¡Descubre restaurantes increíbles y realiza tu primer pedido!
+                            </p>
+                            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                                <a href="{% url 'explorar_restaurantes' %}" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-store me-2"></i>Explorar Restaurantes
+                                </a>
+                                <a href="{% url 'index' %}" class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-home me-2"></i>Ir al Inicio
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PEDIDOS RECOMENDADOS -->
+    {% if pedidos %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-utensils me-2"></i>Basado en tu Historial
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for pedido in pedidos|slice:":3" %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body text-center">
+                                    <div class="restaurant-logo mb-3">
+                                        {% if pedido.restaurante.logo %}
+                                        <img src="{{ pedido.restaurante.logo.url }}" 
+                                             alt="{{ pedido.restaurante.nombre }}"
+                                             class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
+                                        {% else %}
+                                        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto" 
+                                             style="width: 80px; height: 80px;">
+                                            <i class="fas fa-utensils fa-2x text-muted"></i>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <h6 class="card-title">{{ pedido.restaurante.nombre }}</h6>
+                                    <p class="text-muted small mb-3">
+                                        Tu último pedido: {{ pedido.fecha_creacion|timesince }} ago
+                                    </p>
+                                    <a href="{% url 'menu_publico' pedido.restaurante.id %}" 
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-redo me-1"></i>Ordenar de Nuevo
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.empty-icon {
+    opacity: 0.5;
+}
+
+.card {
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %}

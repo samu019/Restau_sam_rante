@@ -1,0 +1,88 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid bg-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">Lleva Tu Restaurante al Mundo Digital</h1>
+                <p class="lead mb-4">Crea tu menú online, acepta pedidos y haz crecer tu negocio con nuestra plataforma todo-en-uno.</p>
+                <div class="hero-features mb-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><i class="fas fa-check-circle me-2"></i> Menú digital personalizado</p>
+                            <p><i class="fas fa-check-circle me-2"></i> Sistema de pedidos 24/7</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><i class="fas fa-check-circle me-2"></i> Panel de administración</p>
+                            <p><i class="fas fa-check-circle me-2"></i> Soporte técnico incluido</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-actions">
+                    <a href="{% url 'solicitar_restaurante' %}" class="btn btn-warning btn-lg me-3">
+                        <i class="fas fa-rocket me-2"></i>Comenzar Ahora
+                    </a>
+                    <a href="#planes" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-list me-2"></i>Ver Planes
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <img src="{% static 'images/restaurant-hero.png' %}" alt="Restaurant Platform" class="img-fluid" style="max-height: 400px;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sección de Planes -->
+<section id="planes" class="py-5">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="section-title">Elige el Plan Perfecto para Tu Negocio</h2>
+                <p class="lead text-muted">Precios en Francos CFA - Todo incluido</p>
+            </div>
+        </div>
+        
+        <div class="row justify-content-center">
+            {% for plan in planes %}
+            <div class="col-lg-5 col-md-6 mb-4">
+                <div class="card plan-card h-100 {% if forloop.first %}popular{% endif %}">
+                    {% if forloop.first %}
+                    <div class="card-header bg-primary text-white text-center py-3">
+                        <span class="badge bg-warning">MÁS POPULAR</span>
+                    </div>
+                    {% endif %}
+                    <div class="card-body text-center p-4">
+                        <h3 class="card-title">{{ plan.nombre }}</h3>
+                        <div class="price mb-3">
+                            <span class="h1 text-primary fw-bold">{{ plan.precio_mensual }}</span>
+                            <span class="h4 text-muted">FCFA</span>
+                            <small class="d-block text-muted">por mes</small>
+                        </div>
+                        <p class="text-muted mb-4">{{ plan.descripcion }}</p>
+                        
+                        <ul class="list-unstyled mb-4">
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Menú digital ilimitado</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Gestión de pedidos</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Panel de administración</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Soporte técnico</li>
+                            {% if forloop.last %}
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Anuncios promocionales</li>
+                            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Estadísticas avanzadas</li>
+                            {% endif %}
+                        </ul>
+                        
+                        <a href="{% url 'solicitar_restaurante' %}" class="btn btn-primary btn-lg w-100">
+                            Elegir {{ plan.nombre }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,175 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+ {% csrf_token %}  <!-- ✅ ESTA LÍNEA ES CRÍTICA -->
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white py-4">
+                    <div class="text-center">
+                        <h1 class="mb-2">🚀 Crear Tu Restaurante</h1>
+                        <p class="mb-0 lead">Elige un plan y realiza el pago para comenzar tu negocio online</p>
+                    </div>
+                </div>
+                
+                <div class="card-body p-5">
+                    {% if messages %}
+                    <div class="mb-4">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <!-- Paso 1: Información del Restaurante -->
+                        <div class="step-section mb-5">
+                            <div class="step-header mb-4">
+                                <span class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">1</span>
+                                <h3 class="d-inline-block mb-0">Información de tu Restaurante</h3>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-8 mx-auto">
+                                    <div class="form-group">
+                                        <label class="form-label fw-bold fs-5">Nombre de tu Restaurante *</label>
+                                        <input type="text" name="nombre_restaurante" class="form-control form-control-lg" 
+                                               placeholder="Ej: Sabores Africanos, La Cocina de María..." required>
+                                        <small class="form-text text-muted">Este será el nombre que verán tus clientes</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Paso 2: Planes -->
+                        <div class="step-section mb-5">
+                            <div class="step-header mb-4">
+                                <span class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">2</span>
+                                <h3 class="d-inline-block mb-0">Elige tu Plan</h3>
+                            </div>
+                            
+                            <div class="row g-4">
+                                {% for plan in planes %}
+                                <div class="col-lg-6">
+                                    <div class="plan-card card h-100 border-3 {% if forloop.first %}border-primary{% else %}border-light{% endif %}">
+                                        <div class="card-body p-4 text-center">
+                                            <div class="plan-badge {% if forloop.first %}bg-primary{% else %}bg-success{% endif %} text-white rounded-pill px-3 py-1 mb-3 d-inline-block">
+                                                {{ plan.nombre }}
+                                            </div>
+                                            <p class="text-muted mb-4">{{ plan.descripcion }}</p>
+                                            
+                                            <div class="price-display bg-light rounded-3 p-4 mb-4">
+                                                <h2 class="text-primary fw-bold mb-1">{{ plan.precio_mensual }} FCFA</h2>
+                                                <small class="text-muted">por mes</small>
+                                                {% if plan.precio_anual %}
+                                                <div class="mt-2">
+                                                    <small class="text-success">
+                                                        <strong>{{ plan.precio_anual }} FCFA</strong> anual (Ahorra 2 meses)
+                                                    </small>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="plan" 
+                                                       value="{{ plan.id }}" id="plan{{ plan.id }}" {% if forloop.first %}required{% endif %}>
+                                                <label class="form-check-label fw-bold" for="plan{{ plan.id }}">
+                                                    Seleccionar este Plan
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Paso 3: Método de Pago -->
+                        <div class="step-section mb-5">
+                            <div class="step-header mb-4">
+                                <span class="step-number bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">3</span>
+                                <h3 class="d-inline-block mb-0">Método de Pago</h3>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-8 mx-auto">
+                                    <div class="form-group">
+                                        <label class="form-label fw-bold fs-5">Selecciona cómo pagar *</label>
+                                        <select name="metodo_pago" class="form-select form-select-lg" required>
+                                            <option value="">Elige tu método de pago preferido</option>
+                                            <option value="TRANSFERENCIA">🏦 Transferencia Bancaria</option>
+                                            <option value="USDT_TRC20">₿ USDT (TRC20)</option>
+                                            <option value="BINANCE">💳 Binance Pay</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información Importante -->
+                        <div class="alert alert-info border-0">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-info-circle fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h5 class="alert-heading">💡 Información Importante</h5>
+                                    <ul class="mb-0">
+                                        <li><strong>Moneda:</strong> Todos los pagos deben realizarse en <strong>Francos CFA (FCFA)</strong></li>
+                                        <li><strong>Verificación:</strong> El proceso de verificación toma 24-48 horas después del pago</li>
+                                        <li><strong>Soporte:</strong> Acceso completo al panel de administración una vez aprobado</li>
+                                        <li><strong>Garantía:</strong> Si no es aprobado, reembolsamos el 100% de tu pago</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botón de Envío -->
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg px-5 py-3">
+                                <i class="fas fa-credit-card me-2"></i>
+                                Continuar al Proceso de Pago
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.step-section {
+    border-left: 4px solid #007bff;
+    padding-left: 2rem;
+}
+
+.plan-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.plan-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.plan-badge {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.price-display {
+    border: 2px dashed #dee2e6;
+}
+
+.form-check-input:checked ~ .card-body {
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}

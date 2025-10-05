@@ -1,0 +1,255 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section Resumen de Pedido -->
+<section class="order-hero py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'restaurantes' %}" class="text-warning">Restaurantes</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'menu_restaurante' pedido.restaurante.id %}" class="text-warning">Menú</a></li>
+                        <li class="breadcrumb-item active text-white">Resumen de Pedido</li>
+                    </ol>
+                </nav>
+                <h1 class="display-4 fw-bold text-white mb-3">Resumen de tu Pedido</h1>
+                <p class="lead text-white mb-4">Revisa los detalles de tu pedido y su estado actual</p>
+            </div>
+            <div class="col-lg-4 text-center">
+                <div class="order-status-badge">
+                    <i class="fas fa-receipt fa-3x text-white mb-3"></i>
+                    <h4 class="text-white">Pedido #{{ pedido.id }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Order Details Section -->
+<section class="order-details-section py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Restaurant Info -->
+                <div class="order-card mb-4">
+                    <div class="order-card-header">
+                        <h3><i class="fas fa-store me-2"></i>Información del Restaurante</h3>
+                    </div>
+                    <div class="order-card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4 class="restaurant-name">{{ pedido.restaurante.nombre }}</h4>
+                                {% if pedido.restaurante.direccion %}
+                                <p class="restaurant-info">
+                                    <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                                    {{ pedido.restaurante.direccion }}
+                                </p>
+                                {% endif %}
+                                {% if pedido.restaurante.telefono %}
+                                <p class="restaurant-info">
+                                    <i class="fas fa-phone text-success me-2"></i>
+                                    {{ pedido.restaurante.telefono }}
+                                </p>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 text-center">
+                                {% if pedido.restaurante.imagen %}
+                                <img src="{{ pedido.restaurante.imagen.url }}" alt="{{ pedido.restaurante.nombre }}" class="restaurant-thumbnail rounded-circle">
+                                {% else %}
+                                <div class="restaurant-thumbnail-placeholder rounded-circle">
+                                    <i class="fas fa-store"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Items -->
+                <div class="order-card mb-4">
+                    <div class="order-card-header">
+                        <h3><i class="fas fa-utensils me-2"></i>Detalles del Pedido</h3>
+                    </div>
+                    <div class="order-card-body">
+                        <div class="order-items">
+                            {% for plato in pedido.platos.all %}
+                            <div class="order-item row align-items-center mb-3 pb-3 border-bottom">
+                                <div class="col-md-2 text-center">
+                                    {% if plato.plato.imagen %}
+                                    <img src="{{ plato.plato.imagen.url }}" alt="{{ plato.plato.nombre }}" class="item-thumbnail rounded">
+                                    {% else %}
+                                    <div class="item-thumbnail-placeholder rounded">
+                                        <i class="fas fa-utensils"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 class="item-name mb-1">{{ plato.plato.nombre }}</h5>
+                                    {% if plato.plato.descripcion %}
+                                    <p class="item-description text-muted mb-0">{{ plato.plato.descripcion }}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <span class="item-quantity badge bg-secondary">x{{ plato.cantidad }}</span>
+                                </div>
+                                <div class="col-md-2 text-end">
+                                    <span class="item-price fw-bold">${{ plato.precio_total }}</span>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-shopping-cart fa-2x text-muted mb-3"></i>
+                                <p class="text-muted">No hay platos en este pedido</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary Sidebar -->
+            <div class="col-lg-4">
+                <!-- Order Status -->
+                <div class="order-card mb-4">
+                    <div class="order-card-header">
+                        <h3><i class="fas fa-info-circle me-2"></i>Estado del Pedido</h3>
+                    </div>
+                    <div class="order-card-body">
+                        <div class="order-status text-center">
+                            <div class="status-badge status-{{ pedido.estado|lower }} mb-3">
+                                <i class="fas 
+                                    {% if pedido.estado == 'PENDIENTE' %}fa-clock
+                                    {% elif pedido.estado == 'CONFIRMADO' %}fa-check-circle
+                                    {% elif pedido.estado == 'PREPARACION' %}fa-utensils
+                                    {% elif pedido.estado == 'EN_CAMINO' %}fa-shipping-fast
+                                    {% elif pedido.estado == 'ENTREGADO' %}fa-box-check
+                                    {% else %}fa-info-circle{% endif %} me-2"></i>
+                                {{ pedido.estado }}
+                            </div>
+                            <p class="status-description text-muted">
+                                {% if pedido.estado == 'PENDIENTE' %}
+                                Tu pedido está siendo procesado por el restaurante.
+                                {% elif pedido.estado == 'CONFIRMADO' %}
+                                El restaurante ha confirmado tu pedido.
+                                {% elif pedido.estado == 'PREPARACION' %}
+                                Tu pedido está en preparación.
+                                {% elif pedido.estado == 'EN_CAMINO' %}
+                                Tu pedido está en camino a tu dirección.
+                                {% elif pedido.estado == 'ENTREGADO' %}
+                                Tu pedido ha sido entregado. ¡Disfruta!
+                                {% else %}
+                                Estado del pedido no especificado.
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Total -->
+                <div class="order-card mb-4">
+                    <div class="order-card-header">
+                        <h3><i class="fas fa-receipt me-2"></i>Resumen de Pago</h3>
+                    </div>
+                    <div class="order-card-body">
+                        <div class="order-total-summary">
+                            {% for plato in pedido.platos.all %}
+                            <div class="total-item d-flex justify-content-between mb-2">
+                                <span>{{ plato.plato.nombre }} (x{{ plato.cantidad }})</span>
+                                <span>${{ plato.precio_total }}</span>
+                            </div>
+                            {% endfor %}
+                            
+                            <div class="total-divider my-3 border-top"></div>
+                            
+                            <div class="final-total d-flex justify-content-between align-items-center">
+                                <strong class="fs-5">Total</strong>
+                                <strong class="fs-4 text-success">${{ pedido.total }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Actions -->
+                <div class="order-card">
+                    <div class="order-card-header">
+                        <h3><i class="fas fa-cogs me-2"></i>Acciones</h3>
+                    </div>
+                    <div class="order-card-body">
+                        <div class="order-actions">
+                            <a href="{% url 'menu_restaurante' pedido.restaurante.id %}" class="btn btn-warning w-100 mb-2">
+                                <i class="fas fa-plus-circle me-2"></i>Realizar Otro Pedido
+                            </a>
+                            <a href="{% url 'restaurantes' %}" class="btn btn-outline-secondary w-100 mb-2">
+                                <i class="fas fa-store me-2"></i>Ver Restaurantes
+                            </a>
+                            <button class="btn btn-outline-primary w-100" onclick="window.print()">
+                                <i class="fas fa-print me-2"></i>Imprimir Recibo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Order Timeline -->
+<section class="order-timeline-section bg-light py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="text-center mb-5">Progreso del Pedido</h2>
+                <div class="timeline">
+                    <div class="timeline-item {% if pedido.estado != 'PENDIENTE' %}completed{% endif %}">
+                        <div class="timeline-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h5>Pedido Realizado</h5>
+                            <p>Tu pedido ha sido recibido</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item {% if pedido.estado == 'CONFIRMADO' or pedido.estado == 'PREPARACION' or pedido.estado == 'EN_CAMINO' or pedido.estado == 'ENTREGADO' %}completed{% endif %}">
+                        <div class="timeline-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h5>Confirmado</h5>
+                            <p>El restaurante ha confirmado tu pedido</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item {% if pedido.estado == 'PREPARACION' or pedido.estado == 'EN_CAMINO' or pedido.estado == 'ENTREGADO' %}completed{% endif %}">
+                        <div class="timeline-icon">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h5>En Preparación</h5>
+                            <p>Tu pedido está siendo preparado</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item {% if pedido.estado == 'EN_CAMINO' or pedido.estado == 'ENTREGADO' %}completed{% endif %}">
+                        <div class="timeline-icon">
+                            <i class="fas fa-shipping-fast"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h5>En Camino</h5>
+                            <p>Tu pedido está en camino</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item {% if pedido.estado == 'ENTREGADO' %}completed{% endif %}">
+                        <div class="timeline-icon">
+                            <i class="fas fa-box-check"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h5>Entregado</h5>
+                            <p>Pedido entregado satisfactoriamente</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

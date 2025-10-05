@@ -1,0 +1,401 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0">
+                <!-- Header -->
+                <div class="card-header bg-success text-white text-center py-4">
+                    <i class="fas fa-user-plus fa-2x mb-3"></i>
+                    <h2 class="mb-0">Crear Cuenta</h2>
+                    <p class="mb-0 mt-2 opacity-75">Únete a RestaurantPro y comienza tu negocio</p>
+                </div>
+
+                <div class="card-body p-4">
+                    <!-- Mensajes -->
+                    {% if messages %}
+                    <div class="mb-4">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Errores del formulario -->
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Por favor corrige los siguientes errores:</strong>
+                        <ul class="mb-0 mt-2">
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <!-- Campo Usuario -->
+                        <div class="mb-3">
+                            <label for="username" class="form-label fw-bold">
+                                <i class="fas fa-user me-2"></i>Nombre de Usuario *
+                            </label>
+                            <input type="text" 
+                                   name="username" 
+                                   class="form-control form-control-lg" 
+                                   id="username" 
+                                   placeholder="Elige un nombre de usuario único"
+                                   value="{{ form.username.value|default:'' }}"
+                                   required
+                                   autofocus>
+                            <div class="form-text">
+                                <small>Mínimo 3 caracteres. Solo letras, números y @/./+/-/_</small>
+                            </div>
+                        </div>
+
+                        <!-- Campo Email -->
+                        <div class="mb-3">
+                            <label for="email" class="form-label fw-bold">
+                                <i class="fas fa-envelope me-2"></i>Correo Electrónico *
+                            </label>
+                            <input type="email" 
+                                   name="email" 
+                                   class="form-control form-control-lg" 
+                                   id="email" 
+                                   placeholder="tu@ejemplo.com"
+                                   value="{{ form.email.value|default:'' }}"
+                                   required>
+                            <div class="form-text">
+                                <small>Usaremos este email para contactarte</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Campo Contraseña -->
+                        <div class="mb-3">
+                            <label for="password1" class="form-label fw-bold">
+                                <i class="fas fa-lock me-2"></i>Contraseña *
+                            </label>
+                            <input type="password" 
+                                   name="password1" 
+                                   class="form-control form-control-lg" 
+                                   id="password1" 
+                                   placeholder="Crea una contraseña segura"
+                                   required>
+                            <div class="form-text">
+                                <small>Requisitos de la contraseña:</small>
+                                <ul class="small mb-0">
+                                    <li>Al menos 8 caracteres</li>
+                                    <li>Al menos 1 letra mayúscula</li>
+                                    <li>Al menos 1 número</li>
+                                    <li>Al menos 1 símbolo especial</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Confirmar Contraseña -->
+                        <div class="mb-4">
+                            <label for="password2" class="form-label fw-bold">
+                                <i class="fas fa-lock me-2"></i>Confirmar Contraseña *
+                            </label>
+                            <input type="password" 
+                                   name="password2" 
+                                   class="form-control form-control-lg" 
+                                   id="password2" 
+                                   placeholder="Repite tu contraseña"
+                                   required>
+                            <div class="form-text">
+                                <small>Debe coincidir con la contraseña anterior</small>
+                            </div>
+                        </div>
+
+                        <!-- Términos y Condiciones -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="terms" required>
+                                <label class="form-check-label small" for="terms">
+                                    Acepto los <a href="#" class="text-primary">Términos de Servicio</a> 
+                                    y la <a href="#" class="text-primary">Política de Privacidad</a> de RestaurantPro
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Botón de Envío -->
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-success btn-lg py-3">
+                                <i class="fas fa-rocket me-2"></i>
+                                Crear Cuenta y Comenzar
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Enlaces Adicionales -->
+                    <div class="text-center">
+                        <p class="text-muted mb-3">¿Ya tienes una cuenta?</p>
+                        <a href="{% url 'login' %}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-sign-in-alt me-2"></i>
+                            Iniciar Sesión
+                        </a>
+                    </div>
+
+                    <!-- Beneficios de Registro -->
+                    <div class="row mt-4 g-3">
+                        <div class="col-md-6">
+                            <div class="benefit-card p-3 bg-light rounded h-100">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-store text-success me-2"></i>
+                                    <h6 class="mb-0">Crea Tu Restaurante</h6>
+                                </div>
+                                <p class="small text-muted mb-0">Configura tu menú online y comienza a recibir pedidos inmediatamente.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="benefit-card p-3 bg-light rounded h-100">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-chart-line text-success me-2"></i>
+                                    <h6 class="mb-0">Crece Tu Negocio</h6>
+                                </div>
+                                <p class="small text-muted mb-0">Accede a herramientas profesionales para hacer crecer tu restaurante.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información de Planes -->
+                    <div class="mt-4 p-4 bg-warning bg-opacity-10 rounded border border-warning">
+                        <h6 class="text-warning mb-3">
+                            <i class="fas fa-crown me-2"></i>Planes Disponibles
+                        </h6>
+                        <div class="row text-center">
+                            <div class="col-md-6 mb-3">
+                                <div class="p-3 bg-white rounded">
+                                    <h5 class="text-primary mb-1">Plan Básico</h5>
+                                    <h4 class="text-primary">15,000 FCFA</h4>
+                                    <small class="text-muted">/mes</small>
+                                    <ul class="list-unstyled small mt-2">
+                                        <li>✔ Menú digital</li>
+                                        <li>✔ Pedidos online</li>
+                                        <li>✔ Panel básico</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="p-3 bg-white rounded">
+                                    <h5 class="text-success mb-1">Plan Pro</h5>
+                                    <h4 class="text-success">30,000 FCFA</h4>
+                                    <small class="text-muted">/mes</small>
+                                    <ul class="list-unstyled small mt-2">
+                                        <li>✔ Todo en Básico</li>
+                                        <li>✔ Anuncios</li>
+                                        <li>✔ Estadísticas</li>
+                                        <li>✔ Soporte prioritario</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer del Card -->
+                <div class="card-footer bg-transparent text-center py-3">
+                    <small class="text-muted">
+                        <i class="fas fa-shield-alt me-1"></i>
+                        Registro 100% seguro - Sin cargos ocultos
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.card-header {
+    border-bottom: none;
+}
+
+.form-control {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.btn {
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+}
+
+.benefit-card {
+    transition: all 0.3s ease;
+    border-left: 4px solid #28a745;
+}
+
+.benefit-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Indicadores de fortaleza de contraseña */
+.password-strength {
+    height: 4px;
+    border-radius: 2px;
+    margin-top: 5px;
+    transition: all 0.3s ease;
+}
+
+.strength-weak { background-color: #dc3545; width: 25%; }
+.strength-fair { background-color: #fd7e14; width: 50%; }
+.strength-good { background-color: #ffc107; width: 75%; }
+.strength-strong { background-color: #28a745; width: 100%; }
+
+/* Animaciones */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.benefit-card {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+    }
+    
+    .card-body {
+        padding: 2rem 1.5rem;
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validación de contraseña en tiempo real
+    const password1 = document.getElementById('password1');
+    const password2 = document.getElementById('password2');
+    const strengthIndicator = document.createElement('div');
+    
+    strengthIndicator.className = 'password-strength';
+    password1.parentElement.appendChild(strengthIndicator);
+
+    function checkPasswordStrength(password) {
+        let strength = 0;
+        
+        // Longitud
+        if (password.length >= 8) strength += 25;
+        
+        // Mayúsculas
+        if (/[A-Z]/.test(password)) strength += 25;
+        
+        // Números
+        if (/[0-9]/.test(password)) strength += 25;
+        
+        // Símbolos
+        if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength += 25;
+        
+        return strength;
+    }
+
+    function updateStrengthIndicator(strength) {
+        strengthIndicator.className = 'password-strength ';
+        if (strength <= 25) {
+            strengthIndicator.classList.add('strength-weak');
+        } else if (strength <= 50) {
+            strengthIndicator.classList.add('strength-fair');
+        } else if (strength <= 75) {
+            strengthIndicator.classList.add('strength-good');
+        } else {
+            strengthIndicator.classList.add('strength-strong');
+        }
+    }
+
+    password1.addEventListener('input', function() {
+        const strength = checkPasswordStrength(this.value);
+        updateStrengthIndicator(strength);
+    });
+
+    // Validación de coincidencia de contraseñas
+    function validatePasswordMatch() {
+        if (password1.value && password2.value) {
+            if (password1.value !== password2.value) {
+                password2.style.borderColor = '#dc3545';
+            } else {
+                password2.style.borderColor = '#28a745';
+            }
+        }
+    }
+
+    password2.addEventListener('input', validatePasswordMatch);
+    password1.addEventListener('input', validatePasswordMatch);
+
+    // Mostrar/ocultar contraseña
+    function setupPasswordToggle(inputId) {
+        const input = document.getElementById(inputId);
+        const toggle = document.createElement('span');
+        
+        toggle.innerHTML = '<i class="fas fa-eye"></i>';
+        toggle.className = 'password-toggle position-absolute end-0 top-50 translate-middle-y me-3';
+        toggle.style.cursor = 'pointer';
+        toggle.style.zIndex = '5';
+        
+        input.parentElement.style.position = 'relative';
+        input.parentElement.appendChild(toggle);
+        
+        toggle.addEventListener('click', function() {
+            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
+            this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+        });
+    }
+
+    setupPasswordToggle('password1');
+    setupPasswordToggle('password2');
+});
+</script>
+{% endblock %}

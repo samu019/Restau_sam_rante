@@ -1,0 +1,228 @@
+<!-- templates/restaurant/detalle_solicitud.html -->
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+
+{% block title %}Detalle de Solicitud #{{ solicitud.id }} - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="fas fa-file-alt text-primary me-2"></i>
+            Solicitud #{{ solicitud.id }}
+        </h1>
+        <div class="d-flex gap-2">
+            <a href="{% url 'admin_solicitudes' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Volver a Solicitudes
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Información Principal -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Información de la Solicitud
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="40%">Restaurante:</th>
+                                    <td>
+                                        <strong class="h5">{{ solicitud.nombre_restaurante }}</strong>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Usuario:</th>
+                                    <td>
+                                        {{ solicitud.usuario.username }}
+                                        <br>
+                                        <small class="text-muted">{{ solicitud.usuario.email }}</small>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Plan:</th>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ solicitud.plan.nombre }}</span>
+                                        <br>
+                                        <small class="text-muted">${{ solicitud.plan.precio_mensual }}/mes</small>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="40%">Estado:</th>
+                                    <td>
+                                        {% if solicitud.estado == 'PENDIENTE' %}
+                                            <span class="badge bg-warning fs-6">Pendiente</span>
+                                        {% elif solicitud.estado == 'PAGADO' %}
+                                            <span class="badge bg-info fs-6">Pagado</span>
+                                        {% elif solicitud.estado == 'APROBADO' %}
+                                            <span class="badge bg-success fs-6">Aprobado</span>
+                                        {% elif solicitud.estado == 'RECHAZADO' %}
+                                            <span class="badge bg-danger fs-6">Rechazado</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Método Pago:</th>
+                                    <td>
+                                        <span class="badge bg-info">{{ solicitud.metodo_pago }}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Monto:</th>
+                                    <td>
+                                        <strong class="h5 text-success">${{ solicitud.monto_pagado }}</strong>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Fecha:</th>
+                                    <td>
+                                        {{ solicitud.fecha_solicitud|date:"d/m/Y H:i" }}
+                                        {% if solicitud.fecha_aprobacion %}
+                                        <br>
+                                        <small class="text-muted">
+                                            Aprobado: {{ solicitud.fecha_aprobacion|date:"d/m/Y H:i" }}
+                                        </small>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comprobante de Pago -->
+            {% if solicitud.comprobante_pago %}
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-file-invoice-dollar me-2"></i>Comprobante de Pago
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-file-image fa-3x text-success mb-3"></i>
+                        <p class="mb-2">Comprobante subido por el usuario</p>
+                        <a href="{{ solicitud.comprobante_pago.url }}" 
+                           class="btn btn-success" 
+                           target="_blank"
+                           download>
+                            <i class="fas fa-download me-2"></i>Descargar Comprobante
+                        </a>
+                    </div>
+                    
+                    <!-- Vista previa de imagen -->
+                    {% if solicitud.comprobante_pago.url|lower|slice:'-4:' == '.jpg' or solicitud.comprobante_pago.url|lower|slice:'-5:' == '.jpeg' or solicitud.comprobante_pago.url|lower|slice:'-4:' == '.png' %}
+                    <div class="mt-3">
+                        <img src="{{ solicitud.comprobante_pago.url }}" 
+                             alt="Comprobante de pago" 
+                             class="img-fluid rounded shadow"
+                             style="max-height: 300px;">
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Panel de Acciones -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cogs me-2"></i>Acciones
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Estado Actual -->
+                    <div class="mb-4">
+                        <h6>Estado Actual:</h6>
+                        <div class="alert 
+                            {% if solicitud.estado == 'PENDIENTE' %}alert-warning
+                            {% elif solicitud.estado == 'PAGADO' %}alert-info
+                            {% elif solicitud.estado == 'APROBADO' %}alert-success
+                            {% elif solicitud.estado == 'RECHAZADO' %}alert-danger
+                            {% endif %}">
+                            <strong>{{ solicitud.estado }}</strong>
+                        </div>
+                    </div>
+
+                    <!-- Acciones Rápidas -->
+                    <form method="post" class="mb-3">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            {% if solicitud.estado == 'PENDIENTE' %}
+                            <button type="submit" name="accion" value="marcar_pagado" 
+                                    class="btn btn-info btn-sm">
+                                <i class="fas fa-check-circle me-2"></i>Marcar como Pagado
+                            </button>
+                            {% endif %}
+
+                            {% if solicitud.estado == 'PAGADO' %}
+                            <button type="submit" name="accion" value="marcar_pendiente" 
+                                    class="btn btn-warning btn-sm">
+                                <i class="fas fa-clock me-2"></i>Marcar como Pendiente
+                            </button>
+                            {% endif %}
+
+                            <button type="submit" name="accion" value="notificar_usuario" 
+                                    class="btn btn-secondary btn-sm">
+                                <i class="fas fa-envelope me-2"></i>Reenviar Notificación
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Acciones Principales -->
+                    <div class="d-grid gap-2">
+                        {% if solicitud.estado == 'PAGADO' and not tiene_restaurante %}
+                        <a href="{% url 'aprobar_solicitud' solicitud.id %}" 
+                           class="btn btn-success">
+                            <i class="fas fa-check me-2"></i>Aprobar Solicitud
+                        </a>
+                        {% endif %}
+
+                        {% if solicitud.estado != 'RECHAZADO' and solicitud.estado != 'APROBADO' %}
+                        <a href="{% url 'rechazar_solicitud' solicitud.id %}" 
+                           class="btn btn-danger">
+                            <i class="fas fa-times me-2"></i>Rechazar Solicitud
+                        </a>
+                        {% endif %}
+
+                        {% if tiene_restaurante %}
+                        <div class="alert alert-info mt-3">
+                            <small>
+                                <i class="fas fa-info-circle me-1"></i>
+                                Este usuario ya tiene un restaurante activo en el sistema.
+                            </small>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Información Adicional -->
+                    <div class="mt-4">
+                        <h6>Información Adicional:</h6>
+                        <ul class="list-unstyled small">
+                            <li><i class="fas fa-calendar me-2"></i>Solicitado: {{ solicitud.fecha_solicitud|date:"d/m/Y" }}</li>
+                            {% if solicitud.fecha_aprobacion %}
+                            <li><i class="fas fa-calendar-check me-2"></i>Aprobado: {{ solicitud.fecha_aprobacion|date:"d/m/Y" }}</li>
+                            {% endif %}
+                            <li><i class="fas fa-user me-2"></i>Usuario ID: {{ solicitud.usuario.id }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

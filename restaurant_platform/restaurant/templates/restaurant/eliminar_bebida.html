@@ -1,0 +1,71 @@
+{% extends 'restaurant/base_generic.html' %}
+{% load static %}
+
+{% block title %}Eliminar Bebida - {{ restaurante.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <!-- CARD DE CONFIRMACIÓN -->
+            <div class="card shadow border-0">
+                <div class="card-header bg-danger text-white text-center py-4">
+                    <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                    <h3 class="card-title mb-0">Confirmar Eliminación</h3>
+                </div>
+                <div class="card-body text-center py-5">
+                    {% if bebida.imagen %}
+                    <img src="{{ bebida.imagen.url }}" alt="{{ bebida.nombre }}" class="rounded mb-4" style="max-height: 150px;">
+                    {% else %}
+                    <div class="bg-light rounded d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 150px; height: 150px;">
+                        <i class="fas fa-wine-bottle fa-2x text-muted"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <h4 class="text-danger mb-3">{{ bebida.nombre }}</h4>
+                    
+                    <div class="alert alert-warning mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>¿Estás seguro de que quieres eliminar esta bebida?</strong>
+                        <br>
+                        <small class="text-muted">
+                            La bebida se marcará como inactiva y dejará de aparecer en el menú público.
+                            Los pedidos históricos que contengan esta bebida no se verán afectados.
+                        </small>
+                    </div>
+                    
+                    <div class="bebida-info text-start mb-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Tipo:</strong> {{ bebida.get_tipo_bebida_display }}<br>
+                                <strong>Categoría:</strong> {{ bebida.categoria.nombre }}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Precio:</strong> ${{ bebida.precio }}<br>
+                                <strong>Stock:</strong> 
+                                {% if bebida.stock_ilimitado %}
+                                Ilimitado
+                                {% else %}
+                                {{ bebida.stock }} unidades
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-center gap-3">
+                            <a href="{% url 'administrar_bebidas' %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="fas fa-trash me-2"></i>Eliminar Bebida
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
