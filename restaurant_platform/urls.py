@@ -1,6 +1,7 @@
 # restaurant_platform/urls.py
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
+from django.views.generic import RedirectView, include
 from restaurant import views
 from django.conf import settings
 from django.conf.urls.static import static
@@ -11,6 +12,8 @@ handler404 = 'restaurant.views.handler404'
 handler500 = 'restaurant.views.handler500'
 
 urlpatterns = [
+    # Redireccionamiento temporal para imagen de categoria
+    path('media/categorias/d6obuqsuu2ua1.jpg', RedirectView.as_view(url='/static/images/d6obuqsuu2ua1.jpg', permanent=False)),
     # ADMIN DE DJANGO - Debe ir PRIMERO
     path('admin/', admin.site.urls),
     
