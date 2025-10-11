@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
-# build.sh
-
 set -o errexit
 
-echo "Installing dependencies..."
+echo "=== INSTALANDO DEPENDENCIAS ==="
 pip install -r requirements.txt
 
-echo "Running collectstatic..."
+echo "=== COLECTANDO ARCHIVOS ESTÁTICOS ==="
 python manage.py collectstatic --noinput
 
-echo "Running migrations..."
+echo "=== APLICANDO MIGRACIONES ==="
+python manage.py makemigrations  # ← AGREGAR ESTO
 python manage.py migrate
 
-echo "Build completed successfully!"
+echo "=== BUILD COMPLETADO ==="
