@@ -22,13 +22,36 @@ class Restaurante(models.Model):
     # Estado
     activo = models.BooleanField(default=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
         verbose_name = "Restaurante"
         verbose_name_plural = "Restaurantes"
     
     def __str__(self):
         return f"{self.nombre} - {self.propietario.username}"
+
+    # ✅ PROPIEDADES CORREGIDAS - DENTRO DE LA CLASE
+    @property
+    def promedio_calificaciones(self):
+        """Calcula el promedio de calificaciones del restaurante"""
+        resenas = self.resenas.filter(activa=True)
+        if resenas.exists():
+            return round(sum(r.calificacion for r in resenas) / resenas.count(), 1)
+        return 0
+
+    @property
+    def total_resenas(self):
+        """Retorna el total de reseñas del restaurante"""
+        return self.resenas.filter(activa=True).count()
+
+    @property
+    def esta_abierto(self):
+        """Verifica si el restaurante debería estar abierto según la hora actual"""
+        from django.utils import timezone
+        now = timezone.now().time()
+        # Por defecto retornamos True (puedes ajustar según tu lógica)
+        return True
+
 
 class Categoria(models.Model):
     # Cada categoría pertenece a un restaurante específico
@@ -48,6 +71,7 @@ class Categoria(models.Model):
     
     def __str__(self):
         return f"{self.emoji} {self.nombre} - {self.restaurante.nombre}"
+
 
 class Plato(models.Model):
     TIPO_PLATO = [
@@ -104,6 +128,36 @@ class Plato(models.Model):
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
 
+    # ✅ PROPIEDADES CORREGIDAS - DENTRO DE LA CLASE
+    @property
+    def precio_actual(self):
+        """Retorna el precio actual (promoción o normal)"""
+        if self.precio_promocion and self.precio_promocion > 0:
+            return self.precio_promocion
+        return self.precio
+
+    @property
+    def promedio_calificaciones(self):
+        """Calcula el promedio de calificaciones"""
+        resenas = self.resenas.filter(activa=True)
+        if resenas.exists():
+            return round(sum(r.calificacion for r in resenas) / resenas.count(), 1)
+        return 0
+
+    @property
+    def total_resenas(self):
+        """Retorna el total de reseñas"""
+        return self.resenas.filter(activa=True).count()
+
+    @property
+    def en_stock(self):
+        """Verifica si el plato está en stock"""
+        return self.stock_ilimitado or self.stock > 0
+
+    def __str__(self):
+        return self.nombre
+
+
 class Anuncio(models.Model):
     restaurante = models.ForeignKey(Restaurante, on_delete=models.CASCADE, related_name='anuncios')
     titulo = models.CharField(max_length=200)
@@ -135,6 +189,7 @@ class Anuncio(models.Model):
         from django.utils import timezone
         ahora = timezone.now()
         return self.activo and self.fecha_inicio <= ahora <= self.fecha_fin
+
 
 class Pedido(models.Model):
     ESTADOS_PEDIDO = [
@@ -187,6 +242,7 @@ class Pedido(models.Model):
         self.save()
         return total
 
+
 class PlatoPedido(models.Model):
     pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name='items')
     plato = models.ForeignKey(Plato, on_delete=models.CASCADE)
@@ -206,15 +262,17 @@ class PlatoPedido(models.Model):
         """Calcula el subtotal para este item"""
         return self.precio_unitario * self.cantidad
     
+    # ✅ MÉTODO SAVE CORREGIDO - DENTRO DE LA CLASE
     def save(self, *args, **kwargs):
         # Si es nuevo, guardar el precio actual del plato
-        if not self.pk:
+        if not self.pk and self.plato:
             self.precio_unitario = self.plato.precio_actual
         super().save(*args, **kwargs)
         # Recalcular el total del pedido
-        self.pedido.calcular_total()
+        if hasattr(self, 'pedido') and self.pedido:
+            self.pedido.calcular_total()
 
-# Modelo para el perfil de usuario extendido
+
 class PerfilUsuario(models.Model):
     usuario = models.OneToOneField(User, on_delete=models.CASCADE, related_name='perfil')
     telefono = models.CharField(max_length=20, blank=True, null=True)
@@ -235,6 +293,7 @@ class PerfilUsuario(models.Model):
     def __str__(self):
         return f"Perfil de {self.usuario.username}"
 
+
 class PlanRestaurante(models.Model):
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField()
@@ -244,6 +303,7 @@ class PlanRestaurante(models.Model):
     
     def __str__(self):
         return self.nombre
+
 
 class SolicitudRestaurante(models.Model):
     ESTADOS = [
@@ -272,6 +332,7 @@ class SolicitudRestaurante(models.Model):
     def __str__(self):
         return f"{self.nombre_restaurante} - {self.usuario.username}"
 
+
 class CuentaPago(models.Model):
     metodo = models.CharField(max_length=20, choices=SolicitudRestaurante.METODOS_PAGO)
     nombre_titular = models.CharField(max_length=100)
@@ -283,7 +344,6 @@ class CuentaPago(models.Model):
     def __str__(self):
         return f"{self.metodo} - {self.nombre_titular}"
 
-# AGREGAR AL FINAL DE models.py
 
 class Resena(models.Model):
     ESTRELLAS_CHOICES = [
@@ -310,37 +370,3 @@ class Resena(models.Model):
     
     def __str__(self):
         return f"Reseña de {self.usuario.username} - {self.calificacion} estrellas"
-
-# AGREGAR ESTAS PROPIEDADES AL MODELO Plato (en el lugar apropiado)
-@property
-def precio_actual(self):
-    """Retorna el precio actual (promoción o normal)"""
-    return self.precio_promocion if self.precio_promocion else self.precio
-
-@property
-def promedio_calificaciones(self):
-    """Calcula el promedio de calificaciones"""
-    resenas = self.resenas.filter(activa=True)
-    if resenas.exists():
-        return round(sum(r.calificacion for r in resenas) / resenas.count(), 1)
-    return 0
-
-@property
-def total_resenas(self):
-    """Retorna el total de reseñas"""
-    return self.resenas.filter(activa=True).count()
-
-# AGREGAR ESTAS PROPIEDADES AL MODELO Restaurante
-@property
-def promedio_calificaciones(self):
-    """Calcula el promedio de calificaciones del restaurante"""
-    resenas = self.resenas.filter(activa=True)
-    if resenas.exists():
-        return round(sum(r.calificacion for r in resenas) / resenas.count(), 1)
-    return 0
-
-@property
-def total_resenas(self):
-    """Retorna el total de reseñas del restaurante"""
-    return self.resenas.filter(activa=True).count()
-

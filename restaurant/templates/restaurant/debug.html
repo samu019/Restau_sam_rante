@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug del Sistema</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .warning { color: orange; font-weight: bold; }
+        .diagnosticos { background: #f5f5f5; padding: 20px; border-radius: 5px; }
+        .item { margin: 10px 0; padding: 10px; border-left: 4px solid #ccc; }
+        .success-item { border-left-color: green; background: #e8f5e8; }
+        .error-item { border-left-color: red; background: #ffe8e8; }
+        .warning-item { border-left-color: orange; background: #fff8e8; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Debug del Sistema</h1>
+    
+    <div class="diagnosticos">
+        <h2>Diagnóstico del Sistema</h2>
+        
+        {% for key, value in diagnosticos.items %}
+            <div class="item {% if '✅' in value %}success-item{% elif '❌' in value %}error-item{% elif '⚠️' in value %}warning-item{% endif %}">
+                <strong>{{ key }}:</strong> 
+                <span class="{% if '✅' in value %}success{% elif '❌' in value %}error{% elif '⚠️' in value %}warning{% endif %}">
+                    {{ value }}
+                </span>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <div style="margin-top: 30px;">
+        <h3>Enlaces de Prueba:</h3>
+        <ul>
+            <li><a href="/debug/">Debug Principal</a></li>
+            <li><a href="/debug-index/">Debug Index</a></li>
+            <li><a href="/debug-500/">Debug Error 500</a></li>
+            <li><a href="/">Página Principal (Index)</a></li>
+        </ul>
+    </div>
+</body>
+</html>

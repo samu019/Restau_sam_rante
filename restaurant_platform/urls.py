@@ -8,13 +8,14 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 # Handlers de errores
-handler403 = 'restaurant.views.handler403'
-handler404 = 'restaurant.views.handler404'
-handler500 = 'restaurant.views.handler500'
+# handler403 = 'restaurant.views.handler403'
+# handler404 = 'restaurant.views.handler404'
+# handler500 = 'restaurant.views.handler500'
 
 urlpatterns = [
     # Redireccionamiento temporal para imagen de categoria
     path('media/categorias/d6obuqsuu2ua1.jpg', RedirectView.as_view(url='/static/images/d6obuqsuu2ua1.jpg', permanent=False)),
+    
     # ADMIN DE DJANGO - Debe ir PRIMERO
     path('admin/', admin.site.urls),
     
@@ -94,14 +95,19 @@ urlpatterns = [
     
     # ==================== DIAGNÓSTICO Y DEBUG ====================
     path('diagnostico/', views.diagnostico_restaurante, name='diagnostico'),
-    path('debug/', views.debug_restaurante, name='debug'),
+    path('debug-restaurante/', views.debug_restaurante, name='debug_restaurante'),  # Cambiado nombre
     path('menu-restaurante/<int:restaurante_id>/', views.menu_publico, name='menu_restaurante'),
+    
     # ==================== PERFIL DE USUARIO ====================
     path('perfil/', views.perfil_usuario, name='perfil_usuario'),
+    
+    # ==================== URLs DE DEBUG (TEMPORALES) ====================
+    path('debug-servidor/', views.debug_servidor, name='debug_servidor'),  # Cambiado nombre
+    path('debug-index/', views.debug_vista_index, name='debug_index'),
+    path('debug-500/', views.debug_error_500, name='debug_500'),
 ]    
 
 # Servir archivos multimedia durante el desarrollo
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-

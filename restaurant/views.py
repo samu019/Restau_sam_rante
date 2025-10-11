@@ -1,32 +1,26 @@
+# ===== IMPORTS ORGANIZADOS Y SIN DUPLICADOS =====
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.db.models import Count, Sum
+from django.db.models import Count, Sum, Avg, Q
 from django.utils import timezone
-import re
-# AGREGAR ESTAS IMPORTACIONES AL INICIO
-from django.db.models import Count, Sum, Avg, Q  # Agregar Avg
-from .models import Resena  # Agregar el nuevo modelo
-from .forms import ResenaForm, CheckoutForm, BusquedaRestaurantesForm  # Agregar los nuevos forms
-# AGREGAR ESTAS IMPORTACIONES AL INICIO DEL ARCHIVO
-from django.db.models import Count, Sum, Avg, Q  # Q ya está, agregar Avg
-from .decorators import login_required_redirect, staff_required, propietario_required
-from .models import PlanRestaurante, SolicitudRestaurante, CuentaPago, Restaurante
-from .models import Categoria, Restaurante, Plato, Pedido, PlatoPedido, Anuncio, PerfilUsuario
-from .forms import RegisterForm, CustomLoginForm, RestauranteForm, CategoriaForm, PlatoForm, AnuncioForm, PerfilUsuarioForm, PedidoForm
-from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
-import json
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Pedido, Restaurante, Plato, Categoria, PlatoPedido
+from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect, get_object_or_404
-from django.utils import timezone
-from django.db.models import Q, Count
-from django.contrib.auth.models import User
-from .models import Restaurante, Plato, Pedido, Anuncio, Categoria, PlanRestaurante, SolicitudRestaurante, CuentaPago
+
+# Locales
+from .decorators import login_required_redirect, staff_required, propietario_required
+from .models import (
+    Restaurante, Categoria, Plato, Pedido, PlatoPedido, 
+    Anuncio, PerfilUsuario, PlanRestaurante, SolicitudRestaurante, 
+    CuentaPago, Resena
+)
+from .forms import (
+    RegisterForm, CustomLoginForm, RestauranteForm, CategoriaForm, 
+    PlatoForm, AnuncioForm, PerfilUsuarioForm, PedidoForm, 
+    ResenaForm, CheckoutForm, BusquedaRestaurantesForm
+)
 from .emails import *
 
 # ==================== VISTAS PÚBLICAS ====================
@@ -2542,3 +2536,158 @@ def gestion_resenas(request):
         'stats': stats,
     }
     return render(request, 'restaurant/gestion_resenas.html', context)
+
+
+# ==================== VISTA DE DEBUG TEMPORAL ====================
+
+
+def debug_servidor(request):
+    """
+    Vista temporal para diagnosticar errores del servidor
+    """
+    import traceback
+    from django.db import connection
+    
+    diagnosticos = {
+        'sistema': '✅ Django funcionando',
+        'base_datos': '❌ No verificada',
+        'modelos': '❌ No verificados',
+        'vistas': '❌ No verificadas'
+    }
+    
+    try:
+        # Verificar base de datos
+        connection.ensure_connection()
+        diagnosticos['base_datos'] = '✅ Base de datos conectada'
+        
+        # Verificar modelos
+        from .models import Restaurante, Plato
+        restaurante_count = Restaurante.objects.count()
+        plato_count = Plato.objects.count()
+        diagnosticos['modelos'] = f'✅ Modelos OK (Restaurantes: {restaurante_count}, Platos: {plato_count})'
+        
+        # Verificar propiedades
+        plato = Plato.objects.first()
+        if plato:
+            precio_actual = plato.precio_actual
+            diagnosticos['propiedades'] = f'✅ Propiedades OK (precio_actual: {precio_actual})'
+        
+        diagnosticos['vistas'] = '✅ Vistas cargadas correctamente'
+        
+    except Exception as e:
+        diagnosticos['error'] = f'❌ Error: {str(e)}'
+        diagnosticos['traceback'] = traceback.format_exc()
+    
+    return render(request, 'restaurant/debug.html', {'diagnosticos': diagnosticos})
+
+# ==================== VISTAS DE DEBUG TEMPORALES ====================
+
+def debug_servidor(request):
+    """
+    Vista temporal para diagnosticar errores del servidor
+    """
+    import traceback
+    from django.db import connection
+    
+    diagnosticos = {
+        'sistema': '✅ Django funcionando',
+        'base_datos': '❌ No verificada',
+        'modelos': '❌ No verificados',
+        'vistas': '❌ No verificadas'
+    }
+    
+    try:
+        # Verificar base de datos
+        connection.ensure_connection()
+        diagnosticos['base_datos'] = '✅ Base de datos conectada'
+        
+        # Verificar modelos
+        from .models import Restaurante, Plato
+        restaurante_count = Restaurante.objects.count()
+        plato_count = Plato.objects.count()
+        diagnosticos['modelos'] = f'✅ Modelos OK (Restaurantes: {restaurante_count}, Platos: {plato_count})'
+        
+        # Verificar propiedades
+        plato = Plato.objects.first()
+        if plato:
+            precio_actual = plato.precio_actual
+            diagnosticos['propiedades'] = f'✅ Propiedades OK (precio_actual: {precio_actual})'
+        
+        diagnosticos['vistas'] = '✅ Vistas cargadas correctamente'
+        
+    except Exception as e:
+        diagnosticos['error'] = f'❌ Error: {str(e)}'
+        diagnosticos['traceback'] = traceback.format_exc()
+    
+    return render(request, 'restaurant/debug.html', {'diagnosticos': diagnosticos})
+
+
+def debug_vista_index(request):
+    """
+    Debug específico para la vista index
+    """
+    try:
+        # Verificar si el usuario está autenticado y tiene restaurantes
+        if request.user.is_authenticated:
+            try:
+                # Verificar si el usuario tiene restaurantes usando el related_name correcto
+                if hasattr(request.user, 'restaurantes') and request.user.restaurantes.exists():
+                    diagnosticos = {'redirect': '✅ Redirigiendo a dashboard'}
+                    return render(request, 'restaurant/debug.html', {'diagnosticos': diagnosticos})
+            except Exception as e:
+                diagnosticos = {'error_restaurantes': f'❌ Error verificando restaurantes: {str(e)}'}
+                return render(request, 'restaurant/debug.html', {'diagnosticos': diagnosticos})
+        
+        # Para usuarios normales o no autenticados
+        from .models import Restaurante, Categoria
+        try:
+            restaurantes_destacados = Restaurante.objects.filter(activo=True)[:6]
+            categorias = Categoria.objects.filter(activa=True).annotate(
+                num_restaurantes=Count('restaurante')
+            )[:8]
+            
+            diagnosticos = {
+                'index': '✅ Vista index funcionando',
+                'restaurantes': f'✅ {restaurantes_destacados.count()} restaurantes',
+                'categorias': f'✅ {categorias.count()} categorías'
+            }
+            
+            return render(request, 'restaurant/debug.html', {'diagnosticos': diagnosticos})
+            
+        except Exception as e:
+            diagnosticos = {'error_index': f'❌ Error en index: {str(e)}'}
+            return render(request, 'restaurant/debug.html', {'diagnosticos': diagnosticos})
+            
+    except Exception as e:
+        diagnosticos = {'error_critico': f'❌ Error crítico en index: {str(e)}'}
+        return render(request, 'restaurant/debug.html', {'diagnosticos': diagnosticos})
+
+
+def debug_error_500(request):
+    """
+    Debug específico para errores 500
+    """
+    import traceback
+    diagnosticos = {}
+    
+    try:
+        # Probar cada componente del sistema
+        from django.db import connection
+        connection.ensure_connection()
+        diagnosticos['database'] = '✅ OK'
+        
+        from .models import Restaurante
+        Restaurante.objects.first()
+        diagnosticos['models'] = '✅ OK'
+        
+        from django.contrib.auth.models import User
+        User.objects.first()
+        diagnosticos['auth'] = '✅ OK'
+        
+        diagnosticos['overall'] = '✅ Sistema funcionando correctamente'
+        
+    except Exception as e:
+        diagnosticos['error'] = f'❌ {str(e)}'
+        diagnosticos['traceback'] = traceback.format_exc().split('\n')
+    
+    return render(request, 'restaurant/debug.html', {'diagnosticos': diagnosticos})

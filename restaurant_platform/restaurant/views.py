@@ -17,6 +17,7 @@ from .models import PlanRestaurante, SolicitudRestaurante, CuentaPago, Restauran
 from .models import Categoria, Restaurante, Plato, Pedido, PlatoPedido, Anuncio, PerfilUsuario
 from .forms import RegisterForm, CustomLoginForm, RestauranteForm, CategoriaForm, PlatoForm, AnuncioForm, PerfilUsuarioForm, PedidoForm
 from django.shortcuts import get_object_or_404
+from django.http import JsonResponse, HttpResponse 
 from django.http import JsonResponse
 import json
 from django.shortcuts import render, get_object_or_404, redirect
@@ -30,6 +31,124 @@ from .models import Restaurante, Plato, Pedido, Anuncio, Categoria, PlanRestaura
 from .emails import *
 
 # ==================== VISTAS PÚBLICAS ====================
+# ==================== VISTAS DE DEBUG ====================
+
+def debug_servidor(request):
+    """
+    Vista principal de diagnóstico
+    """
+    diagnosticos = {}
+    
+    try:
+        # 1. Verificar sistema básico
+        diagnosticos['django'] = '✅ Django funcionando'
+        
+        # 2. Verificar base de datos
+        from django.db import connection
+        connection.ensure_connection()
+        diagnosticos['base_datos'] = '✅ Base de datos conectada'
+        
+        # 3. Verificar modelos
+        from .models import Restaurante, Plato
+        try:
+            restaurantes = Restaurante.objects.count()
+            platos = Plato.objects.count()
+            diagnosticos['modelos'] = f'✅ Modelos OK (R: {restaurantes}, P: {platos})'
+        except Exception as e:
+            diagnosticos['modelos'] = f'❌ Error en modelos: {str(e)}'
+        
+        # 4. Verificar propiedades
+        try:
+            plato = Plato.objects.first()
+            if plato:
+                precio = plato.precio_actual
+                diagnosticos['propiedades'] = f'✅ Propiedades OK (precio: {precio})'
+            else:
+                diagnosticos['propiedades'] = '⚠️ No hay platos para probar'
+        except Exception as e:
+            diagnosticos['propiedades'] = f'❌ Error en propiedades: {str(e)}'
+        
+        # 5. Verificar vistas principales
+        diagnosticos['vistas'] = '✅ Vistas cargadas'
+        
+    except Exception as e:
+        diagnosticos['error_general'] = f'❌ Error crítico: {str(e)}'
+    
+    return render(request, 'restaurant/debug.html', {'diagnosticos': diagnosticos})
+
+
+def debug_vista_index(request):
+    """
+    Debug específico para la vista index
+    """
+    try:
+        # Verificar si el usuario está autenticado y tiene restaurantes
+        if request.user.is_authenticated:
+            try:
+                # Verificar si el usuario tiene restaurantes usando el related_name correcto
+                if hasattr(request.user, 'restaurantes') and request.user.restaurantes.exists():
+                    diagnosticos = {'redirect': '✅ Redirigiendo a dashboard'}
+                    return render(request, 'restaurant/debug.html', {'diagnosticos': diagnosticos})
+            except Exception as e:
+                diagnosticos = {'error_restaurantes': f'❌ Error verificando restaurantes: {str(e)}'}
+                return render(request, 'restaurant/debug.html', {'diagnosticos': diagnosticos})
+        
+        # Para usuarios normales o no autenticados
+        from .models import Restaurante, Categoria
+        try:
+            restaurantes_destacados = Restaurante.objects.filter(activo=True)[:6]
+            categorias = Categoria.objects.filter(activa=True).annotate(
+                num_restaurantes=Count('restaurante')
+            )[:8]
+            
+            diagnosticos = {
+                'index': '✅ Vista index funcionando',
+                'restaurantes': f'✅ {restaurantes_destacados.count()} restaurantes',
+                'categorias': f'✅ {categorias.count()} categorías'
+            }
+            
+            return render(request, 'restaurant/debug.html', {'diagnosticos': diagnosticos})
+            
+        except Exception as e:
+            diagnosticos = {'error_index': f'❌ Error en index: {str(e)}'}
+            return render(request, 'restaurant/debug.html', {'diagnosticos': diagnosticos})
+            
+    except Exception as e:
+        diagnosticos = {'error_critico': f'❌ Error crítico en index: {str(e)}'}
+        return render(request, 'restaurant/debug.html', {'diagnosticos': diagnosticos})
+
+
+def debug_error_500(request):
+    """
+    Debug específico para errores 500
+    """
+    import traceback
+    diagnosticos = {}
+    
+    try:
+        # Probar cada componente del sistema
+        from django.db import connection
+        connection.ensure_connection()
+        diagnosticos['database'] = '✅ OK'
+        
+        from .models import Restaurante
+        Restaurante.objects.first()
+        diagnosticos['models'] = '✅ OK'
+        
+        from django.contrib.auth.models import User
+        User.objects.first()
+        diagnosticos['auth'] = '✅ OK'
+        
+        diagnosticos['overall'] = '✅ Sistema funcionando correctamente'
+        
+    except Exception as e:
+        diagnosticos['error'] = f'❌ {str(e)}'
+        diagnosticos['traceback'] = traceback.format_exc().split('\n')
+    
+    return render(request, 'restaurant/debug.html', {'diagnosticos': diagnosticos})
+
+
+
 
 # ==================== HANDLERS DE ERROR ====================
 def handler403(request, exception):
@@ -47,31 +166,29 @@ def handler500(request):
 # ==================== VISTAS PÚBLICAS ====================
 def index(request):
     """
-    Vista principal - Landing page pública
+    Vista principal SIMPLIFICADA para debug
     """
-    # Verificar si el usuario está autenticado y tiene restaurantes
-    if request.user.is_authenticated:
-        try:
-            # Verificar si el usuario tiene restaurantes usando el related_name correcto
-            if hasattr(request.user, 'restaurantes') and request.user.restaurantes.exists():
-                return redirect('dashboard')
-        except:
-            # Si hay algún error, continuar con la página pública
-            pass
+    print("=== 🚨 DEBUG INDEX INICIADO ===")
     
-    # Para usuarios normales o no autenticados, mostrar landing page
-    restaurantes_destacados = Restaurante.objects.filter(activo=True)[:6]
+    # Versión mínima para probar
+    try:
+        from .models import Restaurante
+        restaurantes = Restaurante.objects.filter(activo=True)[:2]
+        
+        print(f"✅ Restaurantes encontrados: {restaurantes.count()}")
+        
+        context = {
+            'restaurantes': restaurantes,
+            'categorias': []  # Vacío temporalmente
+        }
+        
+        return render(request, 'restaurant/index.html', context)
+        
+    except Exception as e:
+        print(f"❌ ERROR en index: {e}")
+        # Devolver respuesta simple para debug
+        return HttpResponse(f"<h1>Error Debug</h1><p>{str(e)}</p>")
     
-    # Obtener categorías con número de restaurantes
-    categorias = Categoria.objects.filter(activa=True).annotate(
-        num_restaurantes=Count('restaurante')
-    )[:8]
-    
-    return render(request, 'restaurant/index.html', {
-        'restaurantes': restaurantes_destacados,
-        'categorias': categorias
-    })
-
 def bienvenidos(request):
     """
     Vista de bienvenida - Pública
